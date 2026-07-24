@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      :root {
+        --bg: #ffffff;
+        --fg: #0f0f0f;
+        --muted: #606060;
+        --border: #e0e0e0;
+        --accent: #cc0000;
+        --chip: #f2f2f2;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #212121;
+          --fg: #f1f1f1;
+          --muted: #aaaaaa;
+          --border: #3f3f3f;
+          --chip: #333333;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        width: 280px;
+        margin: 0;
+        padding: 16px;
+        font-family: "Roboto", "Segoe UI", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      header img { width: 22px; height: 22px; border-radius: 5px; }
+      h1 { font-size: 15px; margin: 0; font-weight: 600; }
+      p.sub { margin: 0 0 14px; font-size: 12px; color: var(--muted); line-height: 1.45; }
+      .row { display: flex; gap: 10px; }
+      .field { flex: 1; }
+      label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+      select {
+        width: 100%;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--chip);
+        color: var(--fg);
+        padding: 0 8px;
+        font-size: 14px;
+      }
+      .summary {
+        margin-top: 14px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: var(--chip);
+        font-size: 13px;
+        text-align: center;
+      }
+      .summary b { color: var(--accent); }
+      .actions { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+      button.clear {
+        background: none;
+        border: none;
+        color: var(--accent);
+        font-size: 12px;
+        cursor: pointer;
+        padding: 4px 0;
+      }
+      button.clear:hover { text-decoration: underline; }
+      .hint { font-size: 11px; color: var(--muted); }
+      footer {
+        margin-top: 14px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border);
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <img src="icons/icon48.png" alt="" />
+      <h1>YouTube Year Filter</h1>
+    </header>
+    <p class="sub">Limit YouTube search results to a range of upload years.</p>
+
+    <div class="row">
+      <div class="field">
+        <label for="from">From year</label>
+        <select id="from"></select>
+      </div>
+      <div class="field">
+        <label for="to">Up to year</label>
+        <select id="to"></select>
+      </div>
+    </div>
+
+    <div class="summary" id="summary">Showing <b>Any year</b></div>
+
+    <div class="actions">
+      <span class="hint">Also available next to the search bar.</span>
+      <button class="clear" id="clear">Clear</button>
+    </div>
+
+    <footer>
+      Tip: leave one field on “Any” for an open-ended range — e.g. only a
+      “Up to” year gives everything before it.
+    </footer>
+
+    <script src="common.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

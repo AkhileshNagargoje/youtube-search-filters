@@ -1,0 +1,16 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Python (icon generator)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Build output
+*.zip
+dist/
