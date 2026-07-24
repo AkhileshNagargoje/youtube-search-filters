@@ -47,10 +47,12 @@ These are **real YouTube search results** — no scraping, no third-party API.
 
 ## 🚀 Usage
 
-- **Year range:** set **From** / **Up to** (next to the search bar or in the popup), then search — results are limited to that upload-year range.
-- **Hide Shorts / duration / min-views:** open the toolbar **popup**, toggle Hide Shorts, and/or enter min/max minutes and a minimum view count. These apply instantly to the current page.
-- A red **"N hidden"** badge next to the search bar shows how many results were removed.
-- Hit **Clear all** in the popup (or set fields back to *Any*) to disable.
+1. Click the **Filters** button next to YouTube's search bar — a small panel opens right there on the page.
+2. Set any of: **Upload year** range, **Hide Shorts**, **Duration** (min/max minutes), **Minimum views**.
+3. Year settings apply to your **next search**; Hide Shorts / duration / views apply **instantly** to the current page.
+4. The button shows a red **count badge** for how many results are hidden, and **Clear all** resets everything.
+
+> The toolbar popup (extension icon) offers the same controls and stays in sync — but the on-page **Filters** button is the recommended way to use it.
 
 ## 📁 Project structure
 

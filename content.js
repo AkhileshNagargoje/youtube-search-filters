@@ -1,13 +1,23 @@
-// YouTube Year Filter — content script.
+// YouTube Filter — content script.
+// Adds a "Filters" button next to the search bar that opens an in-page panel.
 // - Year range: rewrites the search query with before:/after: operators.
 // - Hide Shorts / duration / min-views: hides non-matching results on the page.
 
 (function () {
   const YTYF = window.YTYF;
   const WRAPPER_ID = "ytyf-wrapper";
-  const FROM_ID = "ytyf-from";
-  const TO_ID = "ytyf-to";
+  const BTN_ID = "ytyf-btn";
+  const PANEL_ID = "ytyf-panel";
   const COUNT_ID = "ytyf-count";
+
+  const F = {
+    from: "ytyf-from",
+    to: "ytyf-to",
+    hideShorts: "ytyf-hideshorts",
+    minDuration: "ytyf-mindur",
+    maxDuration: "ytyf-maxdur",
+    minViews: "ytyf-minviews",
+  };
 
   const RENDERER_SEL = [
     "ytd-video-renderer",
@@ -47,7 +57,7 @@
     runSearch(raw);
   }
 
-  function handleClick(e) {
+  function handleSearchClick(e) {
     if (!YTYF.hasYearFilter(settings)) return;
     const btn = e.target.closest(
       "#search-icon-legacy, button[aria-label='Search'], ytd-searchbox button"
@@ -68,7 +78,6 @@
     el.style.display = "none";
     el.dataset.ytfHidden = "1";
   }
-
   function show(el) {
     if (el.dataset.ytfHidden) {
       el.style.display = "";
@@ -103,7 +112,6 @@
     return null;
   }
 
-  // true = keep visible, false = hide
   function matches(el, s) {
     if (s.hideShorts && isShort(el)) return false;
 
@@ -126,10 +134,7 @@
   }
 
   function applyDomFilters() {
-    // Restore everything first, then re-hide — avoids stale hidden state when a
-    // filter is relaxed. Runs synchronously so no intermediate paint/flicker.
     document.querySelectorAll("[data-ytf-hidden]").forEach(show);
-
     if (YTYF.hasDomFilter(settings)) {
       if (settings.hideShorts) {
         document
@@ -142,7 +147,7 @@
         if (!matches(el, settings)) hide(el);
       });
     }
-    updateCount();
+    updateBadges();
   }
 
   let scheduled = false;
@@ -155,59 +160,161 @@
     });
   }
 
-  function updateCount() {
+  // ---- UI: button + in-page panel ------------------------------------------
+
+  function updateBadges() {
+    const btn = document.getElementById(BTN_ID);
+    if (btn) btn.classList.toggle("ytyf-on", YTYF.isActive(settings));
+
     const badge = document.getElementById(COUNT_ID);
-    if (!badge) return;
-    const n = document.querySelectorAll("[data-ytf-hidden]").length;
-    if (YTYF.hasDomFilter(settings) && n > 0) {
-      badge.textContent = `${n} hidden`;
-      badge.style.display = "";
-    } else {
-      badge.style.display = "none";
+    if (badge) {
+      const n = document.querySelectorAll("[data-ytf-hidden]").length;
+      if (YTYF.hasDomFilter(settings) && n > 0) {
+        badge.textContent = String(n);
+        badge.style.display = "";
+      } else {
+        badge.style.display = "none";
+      }
     }
   }
 
-  // ---- inline UI (year pills next to the search bar) -----------------------
-
-  function makeSelect(id, placeholder, key) {
+  function yearSelect(id, key) {
     const sel = document.createElement("select");
     sel.id = id;
-    sel.className = "ytyf-select";
-    sel.setAttribute("aria-label", placeholder);
-
+    sel.className = "ytyf-input";
     const any = document.createElement("option");
     any.value = "";
-    any.textContent = placeholder;
+    any.textContent = "Any";
     sel.appendChild(any);
-
     for (let y = YTYF.currentYear(); y >= YTYF.FIRST_YEAR; y--) {
-      const opt = document.createElement("option");
-      opt.value = String(y);
-      opt.textContent = String(y);
-      sel.appendChild(opt);
+      const o = document.createElement("option");
+      o.value = String(y);
+      o.textContent = String(y);
+      sel.appendChild(o);
     }
-
-    sel.addEventListener("change", () => {
-      settings[key] = sel.value;
-      YTYF.save(settings);
-      updateActive();
-    });
+    sel.addEventListener("change", () => setField(key, sel.value));
     return sel;
   }
 
-  function updateActive() {
-    const wrapper = document.getElementById(WRAPPER_ID);
-    if (wrapper)
-      wrapper.classList.toggle("ytyf-active", YTYF.isActive(settings));
+  function numInput(id, key, placeholder) {
+    const inp = document.createElement("input");
+    inp.type = "number";
+    inp.min = "0";
+    inp.id = id;
+    inp.className = "ytyf-input";
+    inp.placeholder = placeholder;
+    inp.addEventListener("input", () => setField(key, inp.value.trim()));
+    return inp;
   }
 
-  function syncUI() {
-    const from = document.getElementById(FROM_ID);
-    const to = document.getElementById(TO_ID);
-    if (from) from.value = settings.from;
-    if (to) to.value = settings.to;
-    updateActive();
-    updateCount();
+  function row(labelText, ...controls) {
+    const r = document.createElement("div");
+    r.className = "ytyf-row";
+    const l = document.createElement("span");
+    l.className = "ytyf-label";
+    l.textContent = labelText;
+    r.appendChild(l);
+    const c = document.createElement("div");
+    c.className = "ytyf-controls";
+    controls.forEach((x) => c.appendChild(x));
+    r.appendChild(c);
+    return r;
+  }
+
+  function setField(key, value) {
+    settings[key] = value;
+    settings = YTYF.normalize(settings);
+    YTYF.save(settings);
+    applyDomFilters();
+  }
+
+  function buildPanel() {
+    const panel = document.createElement("div");
+    panel.id = PANEL_ID;
+    panel.className = "ytyf-panel";
+
+    const title = document.createElement("div");
+    title.className = "ytyf-title";
+    title.textContent = "Filter results";
+    panel.appendChild(title);
+
+    // Year range
+    const dash = document.createElement("span");
+    dash.className = "ytyf-dash";
+    dash.textContent = "–";
+    panel.appendChild(
+      row("Upload year", yearSelect(F.from, "from"), dash, yearSelect(F.to, "to"))
+    );
+
+    // Hide Shorts toggle
+    const sw = document.createElement("label");
+    sw.className = "ytyf-switch";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.id = F.hideShorts;
+    cb.addEventListener("change", () => setField("hideShorts", cb.checked));
+    const sl = document.createElement("span");
+    sl.className = "ytyf-slider";
+    sw.appendChild(cb);
+    sw.appendChild(sl);
+    panel.appendChild(row("Hide Shorts", sw));
+
+    // Duration
+    const dsep = document.createElement("span");
+    dsep.className = "ytyf-dash";
+    dsep.textContent = "–";
+    panel.appendChild(
+      row(
+        "Duration (min)",
+        numInput(F.minDuration, "minDuration", "min"),
+        dsep,
+        numInput(F.maxDuration, "maxDuration", "max")
+      )
+    );
+
+    // Min views
+    panel.appendChild(
+      row("Min views", numInput(F.minViews, "minViews", "e.g. 10000"))
+    );
+
+    // Footer
+    const footer = document.createElement("div");
+    footer.className = "ytyf-footer";
+    const clear = document.createElement("button");
+    clear.className = "ytyf-clear";
+    clear.textContent = "Clear all";
+    clear.addEventListener("click", () => {
+      settings = YTYF.defaults();
+      YTYF.save(settings);
+      syncPanel();
+      applyDomFilters();
+    });
+    footer.appendChild(clear);
+    panel.appendChild(footer);
+
+    return panel;
+  }
+
+  function syncPanel() {
+    const set = (id, v) => {
+      const e = document.getElementById(id);
+      if (e) e.value = v;
+    };
+    set(F.from, settings.from);
+    set(F.to, settings.to);
+    set(F.minDuration, settings.minDuration);
+    set(F.maxDuration, settings.maxDuration);
+    set(F.minViews, settings.minViews);
+    const cb = document.getElementById(F.hideShorts);
+    if (cb) cb.checked = settings.hideShorts;
+    updateBadges();
+  }
+
+  function togglePanel(force) {
+    const wrapper = document.getElementById(WRAPPER_ID);
+    if (!wrapper) return;
+    const open = force != null ? force : !wrapper.classList.contains("ytyf-open");
+    wrapper.classList.toggle("ytyf-open", open);
   }
 
   function injectUI() {
@@ -223,30 +330,32 @@
 
     const wrapper = document.createElement("span");
     wrapper.id = WRAPPER_ID;
-    wrapper.title = "Filter YouTube results (year, Shorts, duration, views)";
 
-    const icon = document.createElement("span");
-    icon.className = "ytyf-icon";
-    icon.textContent = "📅";
-    wrapper.appendChild(icon);
+    const btn = document.createElement("button");
+    btn.id = BTN_ID;
+    btn.type = "button";
+    btn.title = "Filter YouTube results";
+    btn.innerHTML =
+      '<span class="ytyf-fico">☰</span><span class="ytyf-btext">Filters</span>' +
+      '<span id="' + COUNT_ID + '" class="ytyf-count" style="display:none"></span>';
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      togglePanel();
+    });
+    wrapper.appendChild(btn);
 
-    wrapper.appendChild(makeSelect(FROM_ID, "From", "from"));
-
-    const dash = document.createElement("span");
-    dash.className = "ytyf-dash";
-    dash.textContent = "–";
-    wrapper.appendChild(dash);
-
-    wrapper.appendChild(makeSelect(TO_ID, "To", "to"));
-
-    const count = document.createElement("span");
-    count.id = COUNT_ID;
-    count.className = "ytyf-count";
-    count.style.display = "none";
-    wrapper.appendChild(count);
+    const panel = buildPanel();
+    panel.addEventListener("click", (e) => e.stopPropagation());
+    wrapper.appendChild(panel);
 
     searchbox.parentElement.insertBefore(wrapper, searchbox.nextSibling);
-    syncUI();
+    syncPanel();
+  }
+
+  // Close the panel when clicking anywhere outside it.
+  function handleOutsideClick(e) {
+    const wrapper = document.getElementById(WRAPPER_ID);
+    if (wrapper && !wrapper.contains(e.target)) togglePanel(false);
   }
 
   // ---- boot & SPA handling -------------------------------------------------
@@ -255,7 +364,7 @@
     YTYF.load((s) => {
       settings = s;
       injectUI();
-      syncUI();
+      syncPanel();
       applyDomFilters();
     });
   }
@@ -268,12 +377,13 @@
 
   YTYF.onChanged((s) => {
     settings = s;
-    syncUI();
+    syncPanel();
     applyDomFilters();
   });
 
   document.addEventListener("keydown", handleKeydown, true);
-  document.addEventListener("click", handleClick, true);
+  document.addEventListener("click", handleSearchClick, true);
+  document.addEventListener("click", handleOutsideClick);
   document.addEventListener("yt-navigate-finish", init);
 
   if (document.readyState === "loading") {

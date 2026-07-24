@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented here.
 
+## [1.3.0] - 2026-07-24
+
+### Changed
+- **New primary UI: an in-page "Filters" button** next to the search bar that
+  opens a small panel with all options (year range, Hide Shorts, duration, min
+  views). Because the panel lives inside the YouTube page rather than a browser
+  popup, it can't be dismissed by the popup focus/touch glitch some devices hit.
+- The button shows a red count badge for how many results are hidden and
+  highlights when any filter is active.
+- Panel closes when you click outside it.
+
+### Notes
+- The toolbar popup still works and stays in sync, but the on-page button is now
+  the recommended way to use the extension.
+
 ## [1.2.1] - 2026-07-24
 
 ### Fixed

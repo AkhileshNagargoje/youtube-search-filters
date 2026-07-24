@@ -1,104 +1,207 @@
+/* ---- wrapper + button --------------------------------------------------- */
 #ytyf-wrapper {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  height: 36px;
   margin-left: 10px;
-  padding: 0 10px;
+  font-family: "Roboto", "Arial", sans-serif;
+}
+
+#ytyf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
   border-radius: 18px;
   border: 1px solid var(--yt-spec-10-percent-layer, #d3d3d3);
   background: var(--yt-spec-badge-chip-background, #f2f2f2);
-  font-family: "Roboto", "Arial", sans-serif;
-  box-sizing: border-box;
+  color: var(--yt-spec-text-primary, #0f0f0f);
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-
-#ytyf-wrapper:hover {
+#ytyf-btn:hover {
   border-color: var(--yt-spec-text-secondary, #909090);
 }
-
-/* Highlight subtly when a filter is active. */
-#ytyf-wrapper.ytyf-active {
+#ytyf-btn.ytyf-on {
   border-color: #cc0000;
   box-shadow: 0 0 0 1px rgba(204, 0, 0, 0.25);
 }
-
-.ytyf-icon {
-  font-size: 13px;
+.ytyf-fico {
+  font-size: 14px;
   line-height: 1;
-  opacity: 0.75;
-  margin-right: 2px;
 }
-
-.ytyf-dash {
-  color: var(--yt-spec-text-secondary, #606060);
-  font-size: 13px;
-  user-select: none;
-}
-
 .ytyf-count {
-  margin-left: 6px;
-  padding: 2px 7px;
+  min-width: 18px;
+  padding: 1px 6px;
   border-radius: 10px;
   background: #cc0000;
   color: #fff;
   font-size: 11px;
-  font-weight: 500;
-  white-space: nowrap;
+  font-weight: 600;
+  text-align: center;
 }
 
-.ytyf-select {
-  appearance: none;
-  -webkit-appearance: none;
-  border: none;
-  background: transparent;
+/* ---- panel -------------------------------------------------------------- */
+.ytyf-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 3000;
+  width: 300px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--yt-spec-menu-background, #ffffff);
+  border: 1px solid var(--yt-spec-10-percent-layer, #e0e0e0);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+  display: none;
+  box-sizing: border-box;
+}
+#ytyf-wrapper.ytyf-open .ytyf-panel {
+  display: block;
+}
+
+.ytyf-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--yt-spec-text-primary, #0f0f0f);
+  margin-bottom: 10px;
+}
+
+.ytyf-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.ytyf-label {
+  font-size: 13px;
+  color: var(--yt-spec-text-secondary, #606060);
+  flex: 0 0 auto;
+}
+.ytyf-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ytyf-dash {
+  color: var(--yt-spec-text-secondary, #606060);
+}
+
+.ytyf-input {
+  height: 30px;
+  width: 74px;
+  border-radius: 8px;
+  border: 1px solid var(--yt-spec-10-percent-layer, #ccc);
+  background: var(--yt-spec-badge-chip-background, #f7f7f7);
   color: var(--yt-spec-text-primary, #0f0f0f);
   font-size: 13px;
-  font-family: inherit;
-  padding: 4px 2px;
+  padding: 0 6px;
+  box-sizing: border-box;
+}
+select.ytyf-input {
+  width: 84px;
   cursor: pointer;
-  outline: none;
-  border-radius: 6px;
+}
+input.ytyf-input[placeholder="e.g. 10000"] {
+  width: 110px;
 }
 
-.ytyf-select:hover {
-  background: var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.05));
+/* toggle switch */
+.ytyf-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+.ytyf-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.ytyf-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #9aa0a6;
+  border-radius: 22px;
+  transition: 0.2s;
+}
+.ytyf-slider::before {
+  content: "";
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+.ytyf-switch input:checked + .ytyf-slider {
+  background: #cc0000;
+}
+.ytyf-switch input:checked + .ytyf-slider::before {
+  transform: translateX(18px);
 }
 
-.ytyf-select option {
-  color: #0f0f0f;
-  background: #ffffff;
+.ytyf-footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--yt-spec-10-percent-layer, #e8e8e8);
+  padding-top: 10px;
+}
+.ytyf-clear {
+  background: none;
+  border: 1px solid var(--yt-spec-10-percent-layer, #ccc);
+  color: var(--yt-spec-text-primary, #0f0f0f);
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.ytyf-clear:hover {
+  border-color: #cc0000;
+  color: #cc0000;
 }
 
-/* Dark theme */
-html[dark] #ytyf-wrapper,
-[dark] #ytyf-wrapper {
-  background: #222222;
+/* ---- dark theme --------------------------------------------------------- */
+html[dark] #ytyf-btn,
+[dark] #ytyf-btn {
+  background: #222;
+  border-color: #3f3f3f;
+  color: #f1f1f1;
+}
+html[dark] .ytyf-panel,
+[dark] .ytyf-panel {
+  background: #282828;
+  border-color: #3f3f3f;
+}
+html[dark] .ytyf-title,
+[dark] .ytyf-title {
+  color: #f1f1f1;
+}
+html[dark] .ytyf-input,
+[dark] .ytyf-input {
+  background: #121212;
+  border-color: #3f3f3f;
+  color: #f1f1f1;
+}
+html[dark] .ytyf-clear,
+[dark] .ytyf-clear {
+  color: #f1f1f1;
   border-color: #3f3f3f;
 }
 
-html[dark] .ytyf-select,
-[dark] .ytyf-select {
-  color: #f1f1f1;
-}
-
-html[dark] .ytyf-select:hover,
-[dark] .ytyf-select:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-html[dark] .ytyf-select option,
-[dark] .ytyf-select option {
-  color: #f1f1f1;
-  background: #282828;
-}
-
-/* Responsive: hide the calendar glyph on narrow viewports to save room. */
+/* ---- responsive --------------------------------------------------------- */
 @media (max-width: 900px) {
-  .ytyf-icon {
+  .ytyf-btext {
     display: none;
   }
-  #ytyf-wrapper {
-    margin-left: 6px;
+  #ytyf-btn {
+    padding: 0 10px;
   }
 }
