@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here.
 
+## [1.2.1] - 2026-07-24
+
+### Fixed
+- Popup closing unexpectedly when interacting with the year dropdowns. The
+  popup no longer uses native `<select>` elements (which can dismiss an
+  extension popup on touch/Windows); years are now number inputs.
+- Popup no longer rewrites input values on every keystroke, so the caret and
+  focus stay put while typing.
+- Popup fails gracefully with a message if the shared module can't load.
+
 ## [1.2.0] - 2026-07-24
 
 ### Added
