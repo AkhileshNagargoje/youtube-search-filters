@@ -155,7 +155,9 @@ input.ytyf-input[placeholder="e.g. 10000"] {
 
 .ytyf-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
   border-top: 1px solid #eaeaea;
   padding-top: 12px;
   margin-top: 4px;
@@ -172,6 +174,20 @@ input.ytyf-input[placeholder="e.g. 10000"] {
 .ytyf-clear:hover {
   border-color: #cc0000;
   color: #cc0000;
+}
+.ytyf-apply {
+  background: #cc0000;
+  border: 1px solid #cc0000;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.ytyf-apply:hover {
+  background: #b00000;
+  border-color: #b00000;
 }
 
 /* ---- dark theme --------------------------------------------------------- */

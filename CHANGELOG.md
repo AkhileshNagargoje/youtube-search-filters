@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## [1.5.0] - 2026-07-24
+
+### Added
+- **Apply button** in the panel footer. Filters still update live as you change
+  them, but Apply also immediately re-runs the current search with the year
+  range (instead of waiting for the next Enter) and closes the panel.
+- Test coverage for the Apply button (16 assertions total).
+
 ## [1.4.0] - 2026-07-24
 
 ### Changed

@@ -73,6 +73,12 @@ check("panel opens on button click", $("ytyf-host").classList.contains("ytyf-ope
 fire(doc.body, "click", "MouseEvent");
 check("panel closes on outside click", !$("ytyf-host").classList.contains("ytyf-open"));
 
+// Apply button exists and closes the panel (no year filter → no navigation)
+fire($("ytyf-btn"), "click", "MouseEvent");
+check("apply button present", !!doc.querySelector(".ytyf-apply"));
+doc.querySelector(".ytyf-apply").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+check("apply closes the panel", !$("ytyf-host").classList.contains("ytyf-open"));
+
 const cb = $("ytyf-hideshorts");
 cb.checked = true;
 fire(cb, "change", "Event");

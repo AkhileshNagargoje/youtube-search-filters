@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YouTube Year Filter",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Filter YouTube results: set an upload-year range, hide Shorts, and hide videos outside a duration or minimum-view threshold.",
   "homepage_url": "https://github.com/AkhileshNagargoje/youtube-year-filter",
   "permissions": ["storage"],

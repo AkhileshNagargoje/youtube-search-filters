@@ -268,6 +268,7 @@
 
     const footer = document.createElement("div");
     footer.className = "ytyf-footer";
+
     const clear = document.createElement("button");
     clear.className = "ytyf-clear";
     clear.type = "button";
@@ -278,7 +279,26 @@
       syncPanel();
       applyDomFilters();
     });
+
+    const apply = document.createElement("button");
+    apply.className = "ytyf-apply";
+    apply.type = "button";
+    apply.textContent = "Apply";
+    apply.addEventListener("click", () => {
+      applyDomFilters();
+      // If a year range is set and there's a query, re-run the search now so the
+      // year filter takes effect immediately instead of on the next Enter.
+      const input = getSearchInput();
+      const raw = input ? input.value.trim() : "";
+      if (YTYF.hasYearFilter(settings) && raw) {
+        runSearch(raw);
+        return;
+      }
+      togglePanel(false);
+    });
+
     footer.appendChild(clear);
+    footer.appendChild(apply);
     panel.appendChild(footer);
 
     return panel;
