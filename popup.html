@@ -22,26 +22,31 @@
       }
       * { box-sizing: border-box; }
       body {
-        width: 280px;
+        width: 300px;
         margin: 0;
         padding: 16px;
         font-family: "Roboto", "Segoe UI", Arial, sans-serif;
         background: var(--bg);
         color: var(--fg);
       }
-      header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 6px;
-      }
+      header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
       header img { width: 22px; height: 22px; border-radius: 5px; }
       h1 { font-size: 15px; margin: 0; font-weight: 600; }
       p.sub { margin: 0 0 14px; font-size: 12px; color: var(--muted); line-height: 1.45; }
+
+      .section { margin-bottom: 14px; }
+      .section > .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
       .row { display: flex; gap: 10px; }
       .field { flex: 1; }
-      label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-      select {
+      label.small { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+
+      select, input[type="number"] {
         width: 100%;
         height: 34px;
         border-radius: 8px;
@@ -51,64 +56,114 @@
         padding: 0 8px;
         font-size: 14px;
       }
+      input[type="number"]::-webkit-inner-spin-button { opacity: 0.5; }
+
+      .toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: var(--chip);
+        font-size: 14px;
+      }
+      .switch { position: relative; width: 40px; height: 22px; }
+      .switch input { opacity: 0; width: 0; height: 0; }
+      .slider {
+        position: absolute; cursor: pointer; inset: 0;
+        background: #9aa0a6; border-radius: 22px; transition: 0.2s;
+      }
+      .slider::before {
+        content: ""; position: absolute; height: 16px; width: 16px;
+        left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.2s;
+      }
+      .switch input:checked + .slider { background: var(--accent); }
+      .switch input:checked + .slider::before { transform: translateX(18px); }
+
       .summary {
-        margin-top: 14px;
+        margin-top: 4px;
         padding: 10px 12px;
         border-radius: 8px;
         background: var(--chip);
         font-size: 13px;
-        text-align: center;
+        line-height: 1.5;
       }
       .summary b { color: var(--accent); }
-      .actions { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .actions { margin-top: 12px; display: flex; justify-content: flex-end; }
       button.clear {
-        background: none;
-        border: none;
-        color: var(--accent);
-        font-size: 12px;
-        cursor: pointer;
-        padding: 4px 0;
+        background: none; border: 1px solid var(--border);
+        color: var(--fg); font-size: 12px; cursor: pointer;
+        padding: 6px 12px; border-radius: 8px;
       }
-      button.clear:hover { text-decoration: underline; }
-      .hint { font-size: 11px; color: var(--muted); }
+      button.clear:hover { border-color: var(--accent); color: var(--accent); }
+      .hint { font-size: 10.5px; color: var(--muted); margin-top: 4px; }
       footer {
-        margin-top: 14px;
-        padding-top: 10px;
-        border-top: 1px solid var(--border);
-        font-size: 11px;
-        color: var(--muted);
-        line-height: 1.4;
+        margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border);
+        font-size: 11px; color: var(--muted); line-height: 1.4;
       }
     </style>
   </head>
   <body>
     <header>
       <img src="icons/icon48.png" alt="" />
-      <h1>YouTube Year Filter</h1>
+      <h1>YouTube Filter</h1>
     </header>
-    <p class="sub">Limit YouTube search results to a range of upload years.</p>
+    <p class="sub">Filter search results by year, and clean up any page by hiding Shorts, short/long videos, and low-view clips.</p>
 
-    <div class="row">
-      <div class="field">
-        <label for="from">From year</label>
-        <select id="from"></select>
-      </div>
-      <div class="field">
-        <label for="to">Up to year</label>
-        <select id="to"></select>
+    <div class="section">
+      <div class="label">Upload year (search)</div>
+      <div class="row">
+        <div class="field">
+          <label class="small" for="from">From</label>
+          <select id="from"></select>
+        </div>
+        <div class="field">
+          <label class="small" for="to">Up to</label>
+          <select id="to"></select>
+        </div>
       </div>
     </div>
 
-    <div class="summary" id="summary">Showing <b>Any year</b></div>
+    <div class="section">
+      <div class="label">Clean up results</div>
+      <div class="toggle">
+        <span>Hide Shorts</span>
+        <label class="switch">
+          <input type="checkbox" id="hideShorts" />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="label">Duration (minutes)</div>
+      <div class="row">
+        <div class="field">
+          <label class="small" for="minDuration">Min</label>
+          <input type="number" id="minDuration" min="0" placeholder="any" />
+        </div>
+        <div class="field">
+          <label class="small" for="maxDuration">Max</label>
+          <input type="number" id="maxDuration" min="0" placeholder="any" />
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="label">Minimum views</div>
+      <input type="number" id="minViews" min="0" step="1000" placeholder="e.g. 10000" />
+      <div class="hint">Videos below this view count are hidden.</div>
+    </div>
+
+    <div class="summary" id="summary"></div>
 
     <div class="actions">
-      <span class="hint">Also available next to the search bar.</span>
-      <button class="clear" id="clear">Clear</button>
+      <button class="clear" id="clear">Clear all</button>
     </div>
 
     <footer>
-      Tip: leave one field on “Any” for an open-ended range — e.g. only a
-      “Up to” year gives everything before it.
+      Year filtering rewrites your search; the rest hide results live on the
+      page — no reload needed.
     </footer>
 
     <script src="common.js"></script>

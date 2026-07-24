@@ -1,29 +1,31 @@
-# 📅 YouTube Year Filter
+# 📅 YouTube Filter
 
-> A lightweight Chrome/Edge extension that filters YouTube search results by **upload year**. Pick a *from* and/or *up to* year and see only videos from that range.
+> A lightweight Chrome/Edge extension that filters YouTube results — by **upload year**, and by **hiding Shorts, off-length videos, and low-view clips**.
 
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 ![No tracking](https://img.shields.io/badge/tracking-none-brightgreen)
 
-YouTube lets you sort by "this year", but there's no way to say *"only show me videos up to 2019."* This extension adds exactly that — a small **From – To** year control right next to the search bar.
+YouTube's built-in filters are coarse and there's no way to say *"only videos up to 2019"*, *"nothing under 10 min"*, or *"hide all Shorts."* This extension adds all of that — a small control next to the search bar plus a richer toolbar popup.
 
-**Example:** search `ai` with **up to `2019`** → you only see AI videos uploaded in 2019 or earlier.
+**Example:** search `ai` with **up to `2019`** → only AI videos from 2019 or earlier. Turn on **Hide Shorts** and set **min views 10K** → a much cleaner results page.
 
 ---
 
 ## ✨ Features
 
-- 🔎 **From / To year range** — set a lower bound, an upper bound, or both.
-- 🧩 **Inline control** — year pills appear right next to YouTube's search bar.
-- 🖱️ **Popup too** — set the range from the toolbar icon; both stay in sync.
-- 🌗 **Light & dark theme** aware, styled to match YouTube.
-- 🔒 **Private** — no tracking, no network calls, no analytics. Your choice is saved with `chrome.storage` only.
+- 🔎 **Upload-year range** — set a *from* and/or *up to* year (works via YouTube's search operators).
+- 🩳 **Hide Shorts** — strip Shorts shelves and Shorts videos from search, home, and sidebar.
+- ⏱️ **Duration filter** — hide anything shorter than a min and/or longer than a max (in minutes).
+- 👁️ **Minimum views** — hide videos below a view-count threshold.
+- 🔢 **"N hidden" badge** — see how many results were filtered out on the page.
+- 🧩 **Inline + popup** controls that stay in sync; 🌗 light/dark aware.
+- 🔒 **Private** — no tracking, no network calls. Settings live in `chrome.storage` only.
 - ⚡ **Tiny** — vanilla JS, no dependencies, no build step.
 
 ## 🛠 How it works
 
-YouTube's search supports two undocumented operators: `before:YYYY-MM-DD` and `after:YYYY-MM-DD`. When you pick a range, the extension rewrites your query — for example:
+**Year range** uses YouTube's undocumented `before:`/`after:` search operators — the extension rewrites your query:
 
 | You search | Range | Rewritten query |
 |---|---|---|
@@ -32,6 +34,8 @@ YouTube's search supports two undocumented operators: `before:YYYY-MM-DD` and `a
 | `ai` | 2015 – 2019 | `ai after:2014-12-31 before:2020-01-01` |
 
 These are **real YouTube search results** — no scraping, no third-party API.
+
+**Hide Shorts / duration / min-views** work client-side: the extension reads each result's duration badge and view count and hides the ones that don't match, live as the page loads (no reload). Nothing leaves your browser.
 
 ## 📦 Install (unpacked)
 
@@ -43,10 +47,10 @@ These are **real YouTube search results** — no scraping, no third-party API.
 
 ## 🚀 Usage
 
-1. Set **From** and/or **Up to** years (next to the search bar, or in the toolbar popup).
-2. Type your search and press **Enter**.
-3. Results are limited to that upload-year range.
-4. Set both back to **Any** (or hit **Clear** in the popup) to disable.
+- **Year range:** set **From** / **Up to** (next to the search bar or in the popup), then search — results are limited to that upload-year range.
+- **Hide Shorts / duration / min-views:** open the toolbar **popup**, toggle Hide Shorts, and/or enter min/max minutes and a minimum view count. These apply instantly to the current page.
+- A red **"N hidden"** badge next to the search bar shows how many results were removed.
+- Hit **Clear all** in the popup (or set fields back to *Any*) to disable.
 
 ## 📁 Project structure
 
