@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here.
 
+## [1.5.1] - 2026-07-24
+
+### Changed
+- Moved the **Filters button back next to the search bar** (per preference). The
+  dropdown panel is still a fixed, `<body>`-attached element positioned under the
+  button, so it stays by the search bar but can't be clipped by YouTube's layout.
+
 ## [1.5.0] - 2026-07-24
 
 ### Added

@@ -7,7 +7,8 @@
 
 (function () {
   const YTYF = window.YTYF;
-  const HOST_ID = "ytyf-host";
+  const WRAPPER_ID = "ytyf-wrapper";
+  const PANEL_ID = "ytyf-panel";
   const BTN_ID = "ytyf-btn";
   const COUNT_ID = "ytyf-count";
 
@@ -319,26 +320,53 @@
     updateBadges();
   }
 
+  // Position the (body-attached, fixed) panel just under the Filters button, so
+  // it sits next to the search bar but is never clipped by YouTube's layout.
+  function positionPanel() {
+    const btn = document.getElementById(BTN_ID);
+    const panel = document.getElementById(PANEL_ID);
+    if (!btn || !panel) return;
+    const r = btn.getBoundingClientRect();
+    const width = panel.offsetWidth || 300;
+    let left = r.right - width;
+    left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
+    panel.style.top = r.bottom + 8 + "px";
+    panel.style.left = left + "px";
+  }
+
   function togglePanel(force) {
-    const host = document.getElementById(HOST_ID);
-    if (!host) return;
+    const panel = document.getElementById(PANEL_ID);
+    if (!panel) return;
     const open =
-      force != null ? force : !host.classList.contains("ytyf-open");
-    host.classList.toggle("ytyf-open", open);
+      force != null ? force : !panel.classList.contains("ytyf-open");
+    panel.classList.toggle("ytyf-open", open);
+    if (open) positionPanel();
   }
 
   function injectUI() {
-    if (document.getElementById(HOST_ID) || !document.body) return;
+    if (document.getElementById(BTN_ID) || !document.body) return;
+    const input = getSearchInput();
+    if (!input) return;
 
-    const host = document.createElement("div");
-    host.id = HOST_ID;
+    const searchbox =
+      document.querySelector("ytd-searchbox") ||
+      input.closest("form") ||
+      input.parentElement;
+    if (!searchbox || !searchbox.parentElement) return;
+
+    // Clear any orphaned panel from a previous SPA navigation.
+    const orphan = document.getElementById(PANEL_ID);
+    if (orphan) orphan.remove();
+
+    const wrapper = document.createElement("span");
+    wrapper.id = WRAPPER_ID;
 
     const btn = document.createElement("button");
     btn.id = BTN_ID;
     btn.type = "button";
     btn.title = "Filter YouTube results";
     btn.innerHTML =
-      '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">' +
+      '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">' +
       '<path d="M3 5h18l-7 8v5l-4 2v-7z"/></svg>' +
       '<span class="ytyf-btext">Filters</span>' +
       '<span id="' + COUNT_ID + '" class="ytyf-count" style="display:none"></span>';
@@ -346,22 +374,35 @@
       e.stopPropagation();
       togglePanel();
     });
-    host.appendChild(btn);
+    wrapper.appendChild(btn);
+    searchbox.parentElement.insertBefore(wrapper, searchbox.nextSibling);
 
     const panel = buildPanel();
+    panel.id = PANEL_ID;
     panel.addEventListener("click", (e) => e.stopPropagation());
-    host.appendChild(panel);
+    document.body.appendChild(panel);
 
-    document.body.appendChild(host);
     syncPanel();
   }
 
   function handleOutsideClick(e) {
-    const host = document.getElementById(HOST_ID);
-    if (host && host.classList.contains("ytyf-open") && !host.contains(e.target)) {
+    const panel = document.getElementById(PANEL_ID);
+    const btn = document.getElementById(BTN_ID);
+    if (
+      panel &&
+      panel.classList.contains("ytyf-open") &&
+      !panel.contains(e.target) &&
+      (!btn || !btn.contains(e.target))
+    ) {
       togglePanel(false);
     }
   }
+
+  // Reposition while open if the viewport changes.
+  window.addEventListener("resize", () => {
+    const panel = document.getElementById(PANEL_ID);
+    if (panel && panel.classList.contains("ytyf-open")) positionPanel();
+  });
 
   // ---- boot & SPA handling -------------------------------------------------
 
@@ -375,7 +416,7 @@
   }
 
   const observer = new MutationObserver(() => {
-    if (!document.getElementById(HOST_ID)) injectUI();
+    if (!document.getElementById(BTN_ID)) injectUI();
     scheduleApply();
   });
   if (document.documentElement) {

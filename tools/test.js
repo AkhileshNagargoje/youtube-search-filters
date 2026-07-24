@@ -63,21 +63,21 @@ const check = (label, cond) => {
   cond ? pass++ : fail++;
 };
 
-check("floating button injected", !!$("ytyf-btn"));
-check("panel host injected", !!$("ytyf-host"));
-check("panel hidden initially", !$("ytyf-host").classList.contains("ytyf-open"));
+check("button injected", !!$("ytyf-btn"));
+check("panel injected", !!$("ytyf-panel"));
+check("panel hidden initially", !$("ytyf-panel").classList.contains("ytyf-open"));
 
 fire($("ytyf-btn"), "click", "MouseEvent");
-check("panel opens on button click", $("ytyf-host").classList.contains("ytyf-open"));
+check("panel opens on button click", $("ytyf-panel").classList.contains("ytyf-open"));
 
 fire(doc.body, "click", "MouseEvent");
-check("panel closes on outside click", !$("ytyf-host").classList.contains("ytyf-open"));
+check("panel closes on outside click", !$("ytyf-panel").classList.contains("ytyf-open"));
 
 // Apply button exists and closes the panel (no year filter → no navigation)
 fire($("ytyf-btn"), "click", "MouseEvent");
 check("apply button present", !!doc.querySelector(".ytyf-apply"));
 doc.querySelector(".ytyf-apply").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-check("apply closes the panel", !$("ytyf-host").classList.contains("ytyf-open"));
+check("apply closes the panel", !$("ytyf-panel").classList.contains("ytyf-open"));
 
 const cb = $("ytyf-hideshorts");
 cb.checked = true;
