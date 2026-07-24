@@ -1,0 +1,13 @@
+{
+  "name": "youtube-year-filter",
+  "version": "1.4.0",
+  "description": "Filter YouTube results by upload year, and hide Shorts / off-length / low-view videos.",
+  "private": true,
+  "scripts": {
+    "test": "node tools/test.js"
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0"
+  },
+  "license": "MIT"
+}

@@ -1,13 +1,14 @@
 // YouTube Filter — content script.
-// Adds a "Filters" button next to the search bar that opens an in-page panel.
+// A floating "Filters" button (fixed to the page corner) opens a panel with:
 // - Year range: rewrites the search query with before:/after: operators.
 // - Hide Shorts / duration / min-views: hides non-matching results on the page.
+// The button/panel are attached to <body> with position:fixed, so YouTube's
+// layout can never clip, hide, or dismiss them.
 
 (function () {
   const YTYF = window.YTYF;
-  const WRAPPER_ID = "ytyf-wrapper";
+  const HOST_ID = "ytyf-host";
   const BTN_ID = "ytyf-btn";
-  const PANEL_ID = "ytyf-panel";
   const COUNT_ID = "ytyf-count";
 
   const F = {
@@ -72,7 +73,7 @@
     runSearch(raw);
   }
 
-  // ---- DOM filters (hide shorts / duration / views) ------------------------
+  // ---- DOM filters ---------------------------------------------------------
 
   function hide(el) {
     el.style.display = "none";
@@ -84,14 +85,12 @@
       delete el.dataset.ytfHidden;
     }
   }
-
   function isShort(el) {
     return (
       !!el.querySelector('a[href*="/shorts/"]') ||
       el.tagName.toLowerCase().includes("reel")
     );
   }
-
   function getDurationSeconds(el) {
     const badge = el.querySelector(
       "ytd-thumbnail-overlay-time-status-renderer #text," +
@@ -101,7 +100,6 @@
     );
     return badge ? YTYF.parseDuration(badge.textContent) : null;
   }
-
   function getViews(el) {
     const items = el.querySelectorAll(
       "#metadata-line span, .inline-metadata-item, #metadata-line .inline-metadata-item"
@@ -111,10 +109,8 @@
     }
     return null;
   }
-
   function matches(el, s) {
     if (s.hideShorts && isShort(el)) return false;
-
     const min = parseInt(s.minDuration, 10);
     const max = parseInt(s.maxDuration, 10);
     if (!isNaN(min) || !isNaN(max)) {
@@ -124,7 +120,6 @@
         if (!isNaN(max) && secs > max * 60) return false;
       }
     }
-
     const minV = parseInt(s.minViews, 10);
     if (!isNaN(minV)) {
       const v = getViews(el);
@@ -132,7 +127,6 @@
     }
     return true;
   }
-
   function applyDomFilters() {
     document.querySelectorAll("[data-ytf-hidden]").forEach(show);
     if (YTYF.hasDomFilter(settings)) {
@@ -149,23 +143,25 @@
     }
     updateBadges();
   }
-
   let scheduled = false;
   function scheduleApply() {
     if (scheduled) return;
     scheduled = true;
-    requestAnimationFrame(() => {
+    const raf =
+      typeof requestAnimationFrame === "function"
+        ? requestAnimationFrame
+        : (cb) => setTimeout(cb, 16);
+    raf(() => {
       scheduled = false;
       applyDomFilters();
     });
   }
 
-  // ---- UI: button + in-page panel ------------------------------------------
+  // ---- floating button + panel ---------------------------------------------
 
   function updateBadges() {
     const btn = document.getElementById(BTN_ID);
     if (btn) btn.classList.toggle("ytyf-on", YTYF.isActive(settings));
-
     const badge = document.getElementById(COUNT_ID);
     if (badge) {
       const n = document.querySelectorAll("[data-ytf-hidden]").length;
@@ -176,6 +172,13 @@
         badge.style.display = "none";
       }
     }
+  }
+
+  function setField(key, value) {
+    settings[key] = value;
+    settings = YTYF.normalize(settings);
+    YTYF.save(settings);
+    applyDomFilters();
   }
 
   function yearSelect(id, key) {
@@ -195,7 +198,6 @@
     sel.addEventListener("change", () => setField(key, sel.value));
     return sel;
   }
-
   function numInput(id, key, placeholder) {
     const inp = document.createElement("input");
     inp.type = "number";
@@ -206,7 +208,6 @@
     inp.addEventListener("input", () => setField(key, inp.value.trim()));
     return inp;
   }
-
   function row(labelText, ...controls) {
     const r = document.createElement("div");
     r.className = "ytyf-row";
@@ -221,32 +222,22 @@
     return r;
   }
 
-  function setField(key, value) {
-    settings[key] = value;
-    settings = YTYF.normalize(settings);
-    YTYF.save(settings);
-    applyDomFilters();
-  }
-
   function buildPanel() {
     const panel = document.createElement("div");
-    panel.id = PANEL_ID;
     panel.className = "ytyf-panel";
 
     const title = document.createElement("div");
     title.className = "ytyf-title";
-    title.textContent = "Filter results";
+    title.textContent = "Filter YouTube results";
     panel.appendChild(title);
 
-    // Year range
-    const dash = document.createElement("span");
-    dash.className = "ytyf-dash";
-    dash.textContent = "–";
+    const dash1 = document.createElement("span");
+    dash1.className = "ytyf-dash";
+    dash1.textContent = "–";
     panel.appendChild(
-      row("Upload year", yearSelect(F.from, "from"), dash, yearSelect(F.to, "to"))
+      row("Upload year", yearSelect(F.from, "from"), dash1, yearSelect(F.to, "to"))
     );
 
-    // Hide Shorts toggle
     const sw = document.createElement("label");
     sw.className = "ytyf-switch";
     const cb = document.createElement("input");
@@ -259,29 +250,27 @@
     sw.appendChild(sl);
     panel.appendChild(row("Hide Shorts", sw));
 
-    // Duration
-    const dsep = document.createElement("span");
-    dsep.className = "ytyf-dash";
-    dsep.textContent = "–";
+    const dash2 = document.createElement("span");
+    dash2.className = "ytyf-dash";
+    dash2.textContent = "–";
     panel.appendChild(
       row(
         "Duration (min)",
         numInput(F.minDuration, "minDuration", "min"),
-        dsep,
+        dash2,
         numInput(F.maxDuration, "maxDuration", "max")
       )
     );
 
-    // Min views
     panel.appendChild(
       row("Min views", numInput(F.minViews, "minViews", "e.g. 10000"))
     );
 
-    // Footer
     const footer = document.createElement("div");
     footer.className = "ytyf-footer";
     const clear = document.createElement("button");
     clear.className = "ytyf-clear";
+    clear.type = "button";
     clear.textContent = "Clear all";
     clear.addEventListener("click", () => {
       settings = YTYF.defaults();
@@ -311,51 +300,47 @@
   }
 
   function togglePanel(force) {
-    const wrapper = document.getElementById(WRAPPER_ID);
-    if (!wrapper) return;
-    const open = force != null ? force : !wrapper.classList.contains("ytyf-open");
-    wrapper.classList.toggle("ytyf-open", open);
+    const host = document.getElementById(HOST_ID);
+    if (!host) return;
+    const open =
+      force != null ? force : !host.classList.contains("ytyf-open");
+    host.classList.toggle("ytyf-open", open);
   }
 
   function injectUI() {
-    if (document.getElementById(WRAPPER_ID)) return;
-    const input = getSearchInput();
-    if (!input) return;
+    if (document.getElementById(HOST_ID) || !document.body) return;
 
-    const searchbox =
-      document.querySelector("ytd-searchbox") ||
-      input.closest("form") ||
-      input.parentElement;
-    if (!searchbox || !searchbox.parentElement) return;
-
-    const wrapper = document.createElement("span");
-    wrapper.id = WRAPPER_ID;
+    const host = document.createElement("div");
+    host.id = HOST_ID;
 
     const btn = document.createElement("button");
     btn.id = BTN_ID;
     btn.type = "button";
     btn.title = "Filter YouTube results";
     btn.innerHTML =
-      '<span class="ytyf-fico">☰</span><span class="ytyf-btext">Filters</span>' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">' +
+      '<path d="M3 5h18l-7 8v5l-4 2v-7z"/></svg>' +
+      '<span class="ytyf-btext">Filters</span>' +
       '<span id="' + COUNT_ID + '" class="ytyf-count" style="display:none"></span>';
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
       togglePanel();
     });
-    wrapper.appendChild(btn);
+    host.appendChild(btn);
 
     const panel = buildPanel();
     panel.addEventListener("click", (e) => e.stopPropagation());
-    wrapper.appendChild(panel);
+    host.appendChild(panel);
 
-    searchbox.parentElement.insertBefore(wrapper, searchbox.nextSibling);
+    document.body.appendChild(host);
     syncPanel();
   }
 
-  // Close the panel when clicking anywhere outside it.
   function handleOutsideClick(e) {
-    const wrapper = document.getElementById(WRAPPER_ID);
-    if (wrapper && !wrapper.contains(e.target)) togglePanel(false);
+    const host = document.getElementById(HOST_ID);
+    if (host && host.classList.contains("ytyf-open") && !host.contains(e.target)) {
+      togglePanel(false);
+    }
   }
 
   // ---- boot & SPA handling -------------------------------------------------
@@ -370,10 +355,15 @@
   }
 
   const observer = new MutationObserver(() => {
-    if (!document.getElementById(WRAPPER_ID)) injectUI();
+    if (!document.getElementById(HOST_ID)) injectUI();
     scheduleApply();
   });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  if (document.documentElement) {
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+  }
 
   YTYF.onChanged((s) => {
     settings = s;

@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## [1.4.0] - 2026-07-24
+
+### Changed
+- **Filters now live in a floating button** pinned to the bottom-right of the
+  page (fixed position, attached to `<body>`, very high z-index). It no longer
+  anchors to YouTube's search bar, so nothing in YouTube's layout can clip,
+  hide, or dismiss the button or its panel — the root cause of the panel not
+  opening on some devices.
+- Tapping the button opens a panel with all options; tapping outside closes it.
+
+### Testing
+- Added a jsdom integration test (`tools/test.js`, run with `npm test`) covering
+  UI injection, panel open/close, and all three DOM filters — 14 assertions.
+
 ## [1.3.0] - 2026-07-24
 
 ### Changed

@@ -19,7 +19,7 @@ YouTube's built-in filters are coarse and there's no way to say *"only videos up
 - ⏱️ **Duration filter** — hide anything shorter than a min and/or longer than a max (in minutes).
 - 👁️ **Minimum views** — hide videos below a view-count threshold.
 - 🔢 **"N hidden" badge** — see how many results were filtered out on the page.
-- 🧩 **Inline + popup** controls that stay in sync; 🌗 light/dark aware.
+- 🎛️ **Floating controls** — a pinned on-page button (plus a matching toolbar popup) that stay in sync; 🌗 light/dark aware.
 - 🔒 **Private** — no tracking, no network calls. Settings live in `chrome.storage` only.
 - ⚡ **Tiny** — vanilla JS, no dependencies, no build step.
 
@@ -47,23 +47,33 @@ These are **real YouTube search results** — no scraping, no third-party API.
 
 ## 🚀 Usage
 
-1. Click the **Filters** button next to YouTube's search bar — a small panel opens right there on the page.
+1. On any YouTube page, click the floating **🔻 Filters** button (bottom-right corner) — a panel opens.
 2. Set any of: **Upload year** range, **Hide Shorts**, **Duration** (min/max minutes), **Minimum views**.
 3. Year settings apply to your **next search**; Hide Shorts / duration / views apply **instantly** to the current page.
-4. The button shows a red **count badge** for how many results are hidden, and **Clear all** resets everything.
+4. The button shows a red **count badge** for how many results are hidden, and **Clear all** resets everything. Click outside the panel to close it.
 
-> The toolbar popup (extension icon) offers the same controls and stays in sync — but the on-page **Filters** button is the recommended way to use it.
+> The button is pinned to the page (not YouTube's toolbar), so nothing in YouTube's layout can hide or dismiss it. The extension-icon popup offers the same controls and stays in sync.
+
+## 🧪 Tests
+
+```bash
+npm install   # jsdom (dev only)
+npm test      # runs tools/test.js against a mock YouTube DOM
+```
 
 ## 📁 Project structure
 
 ```
 ├── manifest.json      # Extension config (Manifest V3)
-├── common.js          # Shared filter logic (query building, storage)
-├── content.js         # Injects the year pills, intercepts search
-├── styles.css         # Inline-control styling (light/dark)
-├── popup.html/js      # Toolbar popup
+├── common.js          # Shared logic: storage, query building, parsers
+├── content.js         # Floating button/panel, search + DOM filtering
+├── styles.css         # Button/panel styling (light/dark)
+├── popup.html/js      # Toolbar popup (mirrors the on-page panel)
 ├── icons/             # 16/32/48/128 px PNG icons
-└── tools/make_icons.py# Regenerate icons (requires Pillow)
+├── package.json       # npm test script + jsdom devDependency
+└── tools/
+    ├── make_icons.py  # Regenerate icons (requires Pillow)
+    └── test.js        # jsdom integration test
 ```
 
 ## 🔧 Development
