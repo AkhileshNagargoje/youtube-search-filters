@@ -190,6 +190,51 @@ input.ytyf-input[placeholder="e.g. 10000"] {
   border-color: #b00000;
 }
 
+/* stacked rows (blocklists) */
+.ytyf-row-stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+.ytyf-input-wide {
+  width: 100% !important;
+}
+
+/* presets */
+.ytyf-preset-select {
+  width: 96px !important;
+}
+.ytyf-mini {
+  background: none;
+  border: 1px solid #ccc;
+  color: #0f0f0f;
+  font-size: 12px;
+  padding: 6px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.ytyf-mini:hover {
+  border-color: #909090;
+}
+
+/* divider */
+.ytyf-hr {
+  height: 1px;
+  background: #eaeaea;
+  margin: 2px 0 14px;
+}
+
+/* dark theme for the new bits */
+html[dark] .ytyf-mini,
+[dark] .ytyf-mini {
+  color: #f1f1f1;
+  border-color: #3f3f3f;
+}
+html[dark] .ytyf-hr,
+[dark] .ytyf-hr {
+  background: #3f3f3f;
+}
+
 /* ---- dark theme --------------------------------------------------------- */
 html[dark] .ytyf-panel,
 [dark] .ytyf-panel {

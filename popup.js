@@ -12,13 +12,17 @@
   const fromEl = el("from");
   const toEl = el("to");
   const hideShorts = el("hideShorts");
+  const hideWatched = el("hideWatched");
   const minDuration = el("minDuration");
   const maxDuration = el("maxDuration");
   const minViews = el("minViews");
+  const blockKeywords = el("blockKeywords");
+  const blockChannels = el("blockChannels");
   const summary = el("summary");
   const clearBtn = el("clear");
 
   const numInputs = [fromEl, toEl, minDuration, maxDuration, minViews];
+  const textInputs = [blockKeywords, blockChannels];
 
   // Set max years dynamically.
   fromEl.max = String(YTYF.currentYear());
@@ -42,6 +46,11 @@
     else if (!isNaN(max)) bits.push(`≤ ${max} min`);
     const mv = parseInt(s.minViews, 10);
     if (!isNaN(mv)) bits.push(`≥ ${fmtViews(mv)} views`);
+    if (s.hideWatched) bits.push("no watched");
+    const kw = YTYF.parseList(s.blockKeywords);
+    if (kw.length) bits.push(`${kw.length} keyword${kw.length > 1 ? "s" : ""} blocked`);
+    const ch = YTYF.parseList(s.blockChannels);
+    if (ch.length) bits.push(`${ch.length} channel${ch.length > 1 ? "s" : ""} blocked`);
     return bits;
   }
 
@@ -60,9 +69,12 @@
     fromEl.value = settings.from;
     toEl.value = settings.to;
     hideShorts.checked = settings.hideShorts;
+    hideWatched.checked = settings.hideWatched;
     minDuration.value = settings.minDuration;
     maxDuration.value = settings.maxDuration;
     minViews.value = settings.minViews;
+    blockKeywords.value = settings.blockKeywords;
+    blockChannels.value = settings.blockChannels;
     renderSummary();
   }
 
@@ -71,9 +83,12 @@
       from: fromEl.value.trim(),
       to: toEl.value.trim(),
       hideShorts: hideShorts.checked,
+      hideWatched: hideWatched.checked,
       minDuration: minDuration.value.trim(),
       maxDuration: maxDuration.value.trim(),
       minViews: minViews.value.trim(),
+      blockKeywords: blockKeywords.value,
+      blockChannels: blockChannels.value,
     };
   }
 
@@ -95,7 +110,9 @@
   }
 
   numInputs.forEach((n) => n.addEventListener("input", commit));
+  textInputs.forEach((n) => n.addEventListener("input", commit));
   hideShorts.addEventListener("change", commit);
+  hideWatched.addEventListener("change", commit);
 
   [fromEl, toEl].forEach((n) =>
     n.addEventListener("change", () => {

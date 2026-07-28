@@ -28,6 +28,23 @@ const html = `<!doctype html><html><body>
     <span class="badge-shape-wiz__text">15:00</span>
     <div id="metadata-line"><span class="inline-metadata-item">1.2M views</span></div>
   </ytd-video-renderer>
+
+  <ytd-video-renderer id="vidWatched">
+    <span class="badge-shape-wiz__text">5:00</span>
+    <div id="progress"></div>
+    <div id="metadata-line"><span class="inline-metadata-item">50K views</span></div>
+  </ytd-video-renderer>
+
+  <ytd-video-renderer id="vidReaction">
+    <a id="video-title">Epic REACTION to the finale</a>
+    <div id="metadata-line"><span class="inline-metadata-item">50K views</span></div>
+  </ytd-video-renderer>
+
+  <ytd-video-renderer id="vidBadChannel">
+    <a id="video-title">Some ordinary video</a>
+    <ytd-channel-name><a>ClickbaitCentral</a></ytd-channel-name>
+    <div id="metadata-line"><span class="inline-metadata-item">50K views</span></div>
+  </ytd-video-renderer>
 </body></html>`;
 
 const dom = new JSDOM(html, { runScripts: "outside-only", pretendToBeVisual: true });
@@ -102,11 +119,48 @@ fire(md, "input", "Event");
 check("minDuration hides short video", hidden("vidLow"));
 check("minDuration keeps long video", !hidden("vidHigh"));
 
+mv.value = "";
+fire(mv, "input", "Event");
+md.value = "";
+fire(md, "input", "Event");
+
+// Hide watched
+const hw = $("ytyf-hidewatched");
+hw.checked = true;
+fire(hw, "change", "Event");
+check("hideWatched hides watched video", hidden("vidWatched"));
+check("hideWatched keeps unwatched video", !hidden("vidHigh"));
+hw.checked = false;
+fire(hw, "change", "Event");
+
+// Keyword blocklist
+const kwIn = $("ytyf-keywords");
+kwIn.value = "reaction";
+fire(kwIn, "input", "Event");
+check("keyword block hides matching title", hidden("vidReaction"));
+check("keyword block keeps others", !hidden("vidHigh"));
+kwIn.value = "";
+fire(kwIn, "input", "Event");
+
+// Channel blocklist
+const chIn = $("ytyf-channels");
+chIn.value = "clickbaitcentral";
+fire(chIn, "input", "Event");
+check("channel block hides matching channel", hidden("vidBadChannel"));
+check("channel block keeps others", !hidden("vidHigh"));
+chIn.value = "";
+fire(chIn, "input", "Event");
+
+// Presets: save then confirm it persisted to storage
+window.YTYF.savePreset("mypreset", { minViews: "5000" }, () => {});
+check("preset saved to storage", !!(store.ytFilterPresets && store.ytFilterPresets.mypreset));
+
 doc.querySelector(".ytyf-clear").dispatchEvent(
   new window.MouseEvent("click", { bubbles: true })
 );
 check("clear all restores vidLow", !hidden("vidLow"));
 check("clear all restores shortsShelf", !hidden("shortsShelf"));
+check("clear all restores vidReaction", !hidden("vidReaction"));
 
 console.log("\n" + pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

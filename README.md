@@ -10,16 +10,22 @@ YouTube's built-in filters are coarse and there's no way to say *"only videos up
 
 **Example:** search `ai` with **up to `2019`** → only AI videos from 2019 or earlier. Turn on **Hide Shorts** and set **min views 10K** → a much cleaner results page.
 
+![Preview of the Filters panel](docs/preview.svg)
+
 ---
 
 ## ✨ Features
 
 - 🔎 **Upload-year range** — set a *from* and/or *up to* year (works via YouTube's search operators).
 - 🩳 **Hide Shorts** — strip Shorts shelves and Shorts videos from search, home, and sidebar.
+- 👁️ **Hide watched** — hide videos you've already partly watched (the red progress bar).
 - ⏱️ **Duration filter** — hide anything shorter than a min and/or longer than a max (in minutes).
-- 👁️ **Minimum views** — hide videos below a view-count threshold.
+- 📊 **Minimum views** — hide videos below a view-count threshold.
+- 🚫 **Keyword & channel blocklists** — hide results whose title contains a word, or from named channels.
+- 💾 **Presets** — save filter combos ("Study mode", "Music only") and switch with one click.
 - 🔢 **"N hidden" badge** — see how many results were filtered out on the page.
-- 🎛️ **Floating controls** — a pinned on-page button (plus a matching toolbar popup) that stay in sync; 🌗 light/dark aware.
+- 🌍 **Translatable** — all UI strings live in `_locales/` (i18n-ready); English included.
+- 🎛️ **Two ways in** — an on-page **Filters** button by the search bar and a matching toolbar popup, kept in sync; 🌗 light/dark aware; ♿ keyboard + ARIA.
 - 🔒 **Private** — no tracking, no network calls. Settings live in `chrome.storage` only.
 - ⚡ **Tiny** — vanilla JS, no dependencies, no build step.
 
@@ -35,7 +41,7 @@ YouTube's built-in filters are coarse and there's no way to say *"only videos up
 
 These are **real YouTube search results** — no scraping, no third-party API.
 
-**Hide Shorts / duration / min-views** work client-side: the extension reads each result's duration badge and view count and hides the ones that don't match, live as the page loads (no reload). Nothing leaves your browser.
+**Hide Shorts / watched / duration / min-views / blocklists** work client-side: the extension reads each result's duration badge, view count, title, channel, and watched-progress and hides the ones that don't match, live as the page loads (no reload). Nothing leaves your browser.
 
 ## 📦 Install (unpacked)
 
@@ -65,15 +71,17 @@ npm test      # runs tools/test.js against a mock YouTube DOM
 
 ```
 ├── manifest.json      # Extension config (Manifest V3)
-├── common.js          # Shared logic: storage, query building, parsers
-├── content.js         # Floating button/panel, search + DOM filtering
+├── common.js          # Shared logic: storage, presets, query building, parsers
+├── content.js         # On-page button/panel, search + DOM filtering
 ├── styles.css         # Button/panel styling (light/dark)
 ├── popup.html/js      # Toolbar popup (mirrors the on-page panel)
+├── _locales/en/       # Translatable UI strings (i18n)
 ├── icons/             # 16/32/48/128 px PNG icons
+├── docs/preview.svg   # README preview image
 ├── package.json       # npm test script + jsdom devDependency
 └── tools/
     ├── make_icons.py  # Regenerate icons (requires Pillow)
-    └── test.js        # jsdom integration test
+    └── test.js        # jsdom integration test (24 assertions)
 ```
 
 ## 🔧 Development
@@ -91,6 +99,13 @@ python tools/make_icons.py
 
 - The `before:`/`after:` operators filter by **upload date**. They're supported by YouTube but undocumented, so behavior can change.
 - Ranges are inclusive of whole years (e.g. "up to 2019" includes all of 2019).
+
+## 🌍 Translations
+
+All UI text lives in [`_locales/en/messages.json`](_locales/en/messages.json). To add a
+language, copy that file to `_locales/<code>/messages.json` (e.g. `es`, `hi`, `fr`),
+translate each `"message"` value, and open a PR — the extension picks it up from the
+browser's language automatically.
 
 ## 🤝 Contributing
 

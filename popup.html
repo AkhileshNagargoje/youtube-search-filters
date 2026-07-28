@@ -46,7 +46,7 @@
       .field { flex: 1; }
       label.small { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
 
-      select, input[type="number"] {
+      select, input[type="number"], input[type="text"] {
         width: 100%;
         height: 34px;
         border-radius: 8px;
@@ -133,6 +133,13 @@
           <span class="slider"></span>
         </label>
       </div>
+      <div class="toggle" style="margin-top:8px">
+        <span>Hide watched</span>
+        <label class="switch">
+          <input type="checkbox" id="hideWatched" />
+          <span class="slider"></span>
+        </label>
+      </div>
     </div>
 
     <div class="section">
@@ -153,6 +160,15 @@
       <div class="label">Minimum views</div>
       <input type="number" id="minViews" min="0" step="1000" placeholder="e.g. 10000" />
       <div class="hint">Videos below this view count are hidden.</div>
+    </div>
+
+    <div class="section">
+      <div class="label">Blocklists</div>
+      <label class="small" for="blockKeywords">Hide titles containing</label>
+      <input type="text" id="blockKeywords" placeholder="e.g. reaction, tier list" />
+      <label class="small" for="blockChannels" style="margin-top:8px">Hide channels</label>
+      <input type="text" id="blockChannels" placeholder="e.g. channel name, another" />
+      <div class="hint">Comma-separated. Case-insensitive.</div>
     </div>
 
     <div class="summary" id="summary"></div>

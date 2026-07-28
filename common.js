@@ -1,8 +1,9 @@
-// Shared logic for YouTube Year Filter, used by both the content script and the
-// popup. Exposes a single global: window.YTYF.
+// Shared logic for YouTube Filter, used by the content script and the popup.
+// Exposes a single global: window.YTYF.
 
 (function () {
   const STORAGE_KEY = "ytFilterSettings";
+  const PRESETS_KEY = "ytFilterPresets";
   const LEGACY_KEY = "ytYearFilterRange"; // v1.x stored only {from,to}
   const FIRST_YEAR = 2005; // YouTube launched in 2005.
 
@@ -10,15 +11,26 @@
     return new Date().getFullYear();
   }
 
-  // Full settings object with sane defaults.
+  // Localized string with an English fallback (works even without chrome.i18n).
+  function t(key, fallback) {
+    try {
+      const m = chrome.i18n && chrome.i18n.getMessage(key);
+      if (m) return m;
+    } catch (e) {}
+    return fallback;
+  }
+
   function defaults() {
     return {
-      from: "", // year lower bound (search operator)
-      to: "", // year upper bound (search operator)
-      hideShorts: false, // remove Shorts from the page
-      minDuration: "", // minutes (DOM filter)
-      maxDuration: "", // minutes (DOM filter)
-      minViews: "", // absolute view count (DOM filter)
+      from: "",
+      to: "",
+      hideShorts: false,
+      minDuration: "",
+      maxDuration: "",
+      minViews: "",
+      hideWatched: false,
+      blockKeywords: "",
+      blockChannels: "",
     };
   }
 
@@ -32,6 +44,9 @@
       minDuration: obj.minDuration || "",
       maxDuration: obj.maxDuration || "",
       minViews: obj.minViews || "",
+      hideWatched: Boolean(obj.hideWatched),
+      blockKeywords: obj.blockKeywords || "",
+      blockChannels: obj.blockChannels || "",
     };
   }
 
@@ -39,9 +54,7 @@
     try {
       chrome.storage.sync.get([STORAGE_KEY, LEGACY_KEY], (res) => {
         res = res || {};
-        // Migrate legacy {from,to} if present and new settings absent.
-        const base = res[STORAGE_KEY] || res[LEGACY_KEY] || {};
-        callback(normalize(base));
+        callback(normalize(res[STORAGE_KEY] || res[LEGACY_KEY] || {}));
       });
     } catch (e) {
       callback(defaults());
@@ -64,6 +77,44 @@
     } catch (e) {}
   }
 
+  // ---- presets -------------------------------------------------------------
+
+  function loadPresets(callback) {
+    try {
+      chrome.storage.sync.get(PRESETS_KEY, (res) => {
+        callback((res && res[PRESETS_KEY]) || {});
+      });
+    } catch (e) {
+      callback({});
+    }
+  }
+
+  function savePreset(name, settings, callback) {
+    loadPresets((presets) => {
+      presets[name] = normalize(settings);
+      try {
+        chrome.storage.sync.set({ [PRESETS_KEY]: presets }, () =>
+          callback && callback(presets)
+        );
+      } catch (e) {
+        callback && callback(presets);
+      }
+    });
+  }
+
+  function deletePreset(name, callback) {
+    loadPresets((presets) => {
+      delete presets[name];
+      try {
+        chrome.storage.sync.set({ [PRESETS_KEY]: presets }, () =>
+          callback && callback(presets)
+        );
+      } catch (e) {
+        callback && callback(presets);
+      }
+    });
+  }
+
   // ---- query building (year range → search operators) ----------------------
 
   function stripDateOperators(query) {
@@ -80,9 +131,8 @@
     return parts.filter(Boolean).join(" ").trim();
   }
 
-  // ---- parsers (used by DOM filters; pure + testable) ----------------------
+  // ---- parsers -------------------------------------------------------------
 
-  // "1.2M views" → 1200000, "12K" → 12000, "1,234 views" → 1234, "No views" → 0
   function parseViews(text) {
     if (!text) return null;
     if (/^\s*no views/i.test(text)) return 0;
@@ -97,12 +147,19 @@
     return Math.round(n);
   }
 
-  // "12:34" → 754, "1:02:03" → 3723; returns null for "LIVE"/"SHORTS"/etc.
   function parseDuration(text) {
     if (!text) return null;
-    const t = text.trim();
-    if (!/^\d{1,2}(:\d{2}){1,2}$/.test(t)) return null;
-    return t.split(":").reduce((acc, p) => acc * 60 + parseInt(p, 10), 0);
+    const t2 = text.trim();
+    if (!/^\d{1,2}(:\d{2}){1,2}$/.test(t2)) return null;
+    return t2.split(":").reduce((acc, p) => acc * 60 + parseInt(p, 10), 0);
+  }
+
+  // Comma/newline separated list → array of lowercased tokens.
+  function parseList(str) {
+    return (str || "")
+      .split(/[,\n]/)
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
   }
 
   // ---- state helpers -------------------------------------------------------
@@ -113,7 +170,14 @@
 
   function hasDomFilter(s) {
     return Boolean(
-      s && (s.hideShorts || s.minDuration || s.maxDuration || s.minViews)
+      s &&
+        (s.hideShorts ||
+          s.minDuration ||
+          s.maxDuration ||
+          s.minViews ||
+          s.hideWatched ||
+          s.blockKeywords ||
+          s.blockChannels)
     );
   }
 
@@ -130,17 +194,23 @@
 
   window.YTYF = {
     STORAGE_KEY,
+    PRESETS_KEY,
     FIRST_YEAR,
     currentYear,
+    t,
     defaults,
     normalize,
     load,
     save,
     onChanged,
+    loadPresets,
+    savePreset,
+    deletePreset,
     stripDateOperators,
     buildQuery,
     parseViews,
     parseDuration,
+    parseList,
     hasYearFilter,
     hasDomFilter,
     isActive,

@@ -2,6 +2,31 @@
 
 All notable changes to this project are documented here.
 
+## [1.6.0] - 2026-07-24
+
+### Added
+- **Hide watched** videos (those with a resume-progress bar).
+- **Keyword blocklist** — hide results whose title contains any listed word.
+- **Channel blocklist** — hide results from listed channels.
+- **Presets** — save/load/delete named filter combinations.
+- **i18n** — all UI strings moved to `_locales/en/messages.json`; `default_locale`
+  set so the extension is translatable. Added a localization helper with English
+  fallback.
+- **Accessibility** — panel is a labelled dialog, button exposes
+  `aria-haspopup`/`aria-expanded`, Escape closes the panel, focus moves into the
+  panel on open and back to the button on close.
+- README preview image (`docs/preview.svg`).
+
+### Changed
+- **Robustness**: more fallback selectors for duration; per-video filtering is
+  wrapped in try/catch so one odd node can't break the whole pass; duration
+  lookup now scans candidates for the first parseable value.
+- Popup mirrors all new fields and no longer overwrites them.
+
+### Testing
+- Test suite expanded to **24 assertions** (hide-watched, keyword/channel
+  blocklists, presets persistence).
+
 ## [1.5.1] - 2026-07-24
 
 ### Changed
