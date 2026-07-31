@@ -22,7 +22,6 @@ YouTube's built-in filters are coarse and there's no way to say *"only videos up
 - ⏱️ **Duration filter** — hide anything shorter than a min and/or longer than a max (in minutes).
 - 📊 **Minimum views** — hide videos below a view-count threshold.
 - 🚫 **Keyword & channel blocklists** — hide results whose title contains a word, or from named channels.
-- 💾 **Presets** — save filter combos ("Study mode", "Music only") and switch with one click.
 - 🔢 **"N hidden" badge** — see how many results were filtered out on the page.
 - 🌍 **Translatable** — all UI strings live in `_locales/` (i18n-ready); English included.
 - 🎛️ **Two ways in** — an on-page **Filters** button by the search bar and a matching toolbar popup, kept in sync; 🌗 light/dark aware; ♿ keyboard + ARIA.
@@ -71,7 +70,7 @@ npm test      # runs tools/test.js against a mock YouTube DOM
 
 ```
 ├── manifest.json      # Extension config (Manifest V3)
-├── common.js          # Shared logic: storage, presets, query building, parsers
+├── common.js          # Shared logic: storage, query building, parsers
 ├── content.js         # On-page button/panel, search + DOM filtering
 ├── styles.css         # Button/panel styling (light/dark)
 ├── popup.html/js      # Toolbar popup (mirrors the on-page panel)

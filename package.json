@@ -1,7 +1,7 @@
 {
   "name": "youtube-year-filter",
-  "version": "1.6.0",
-  "description": "Filter YouTube results by upload year; hide Shorts/watched, off-length & low-view videos; block keywords & channels; save presets.",
+  "version": "1.6.1",
+  "description": "Filter YouTube results by upload year; hide Shorts/watched, off-length & low-view videos; block keywords & channels.",
   "private": true,
   "scripts": {
     "test": "node tools/test.js"

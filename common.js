@@ -3,7 +3,6 @@
 
 (function () {
   const STORAGE_KEY = "ytFilterSettings";
-  const PRESETS_KEY = "ytFilterPresets";
   const LEGACY_KEY = "ytYearFilterRange"; // v1.x stored only {from,to}
   const FIRST_YEAR = 2005; // YouTube launched in 2005.
 
@@ -75,44 +74,6 @@
         }
       });
     } catch (e) {}
-  }
-
-  // ---- presets -------------------------------------------------------------
-
-  function loadPresets(callback) {
-    try {
-      chrome.storage.sync.get(PRESETS_KEY, (res) => {
-        callback((res && res[PRESETS_KEY]) || {});
-      });
-    } catch (e) {
-      callback({});
-    }
-  }
-
-  function savePreset(name, settings, callback) {
-    loadPresets((presets) => {
-      presets[name] = normalize(settings);
-      try {
-        chrome.storage.sync.set({ [PRESETS_KEY]: presets }, () =>
-          callback && callback(presets)
-        );
-      } catch (e) {
-        callback && callback(presets);
-      }
-    });
-  }
-
-  function deletePreset(name, callback) {
-    loadPresets((presets) => {
-      delete presets[name];
-      try {
-        chrome.storage.sync.set({ [PRESETS_KEY]: presets }, () =>
-          callback && callback(presets)
-        );
-      } catch (e) {
-        callback && callback(presets);
-      }
-    });
   }
 
   // ---- query building (year range → search operators) ----------------------
@@ -194,7 +155,6 @@
 
   window.YTYF = {
     STORAGE_KEY,
-    PRESETS_KEY,
     FIRST_YEAR,
     currentYear,
     t,
@@ -203,9 +163,6 @@
     load,
     save,
     onChanged,
-    loadPresets,
-    savePreset,
-    deletePreset,
     stripDateOperators,
     buildQuery,
     parseViews,

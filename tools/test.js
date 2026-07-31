@@ -17,6 +17,8 @@ const html = `<!doctype html><html><body>
 
   <ytd-reel-shelf-renderer id="shortsShelf"><a href="/shorts/aaa">short</a></ytd-reel-shelf-renderer>
 
+  <ytd-reel-shelf-renderer id="reelNoLink"><span>Shorts</span></ytd-reel-shelf-renderer>
+
   <ytd-video-renderer id="vidLowShort"><a href="/shorts/bbb">short vid</a></ytd-video-renderer>
 
   <ytd-video-renderer id="vidLow">
@@ -100,6 +102,7 @@ const cb = $("ytyf-hideshorts");
 cb.checked = true;
 fire(cb, "change", "Event");
 check("hideShorts hides shorts shelf", hidden("shortsShelf"));
+check("hideShorts hides linkless reel shelf", hidden("reelNoLink"));
 check("hideShorts hides shorts video", hidden("vidLowShort"));
 check("hideShorts keeps normal videos", !hidden("vidLow") && !hidden("vidHigh"));
 
@@ -150,10 +153,6 @@ check("channel block hides matching channel", hidden("vidBadChannel"));
 check("channel block keeps others", !hidden("vidHigh"));
 chIn.value = "";
 fire(chIn, "input", "Event");
-
-// Presets: save then confirm it persisted to storage
-window.YTYF.savePreset("mypreset", { minViews: "5000" }, () => {});
-check("preset saved to storage", !!(store.ytFilterPresets && store.ytFilterPresets.mypreset));
 
 doc.querySelector(".ytyf-clear").dispatchEvent(
   new window.MouseEvent("click", { bubbles: true })

@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here.
 
+## [1.6.1] - 2026-08-01
+
+### Fixed
+- **Hide Shorts** now reliably removes Shorts on the real site. It hides whole
+  Shorts shelves (`ytd-reel-shelf-renderer`, `grid-shelf-view-model`, shorts
+  rich-sections) even when they have no direct link, and hides any individual
+  Shorts card by its `/shorts/` link across search, home, and sidebar layouts.
+
+### Removed
+- **Presets** feature (UI, storage helpers, and strings) per request.
+
 ## [1.6.0] - 2026-07-24
 
 ### Added

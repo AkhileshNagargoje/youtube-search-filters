@@ -13,7 +13,6 @@
   const PANEL_ID = "ytyf-panel";
   const BTN_ID = "ytyf-btn";
   const COUNT_ID = "ytyf-count";
-  const PRESET_ID = "ytyf-preset";
 
   const F = {
     from: "ytyf-from",
@@ -194,16 +193,30 @@
     }
   }
 
+  // Robustly remove Shorts: whole shelves/sections, plus any individual Shorts
+  // card found by its /shorts/ link (covers search, home, and sidebar layouts).
+  function hideShortsUI() {
+    document
+      .querySelectorAll(
+        "ytd-reel-shelf-renderer, ytd-rich-shelf-renderer[is-shorts], grid-shelf-view-model, ytd-rich-section-renderer"
+      )
+      .forEach((sh) => {
+        const tag = sh.tagName.toLowerCase();
+        if (tag.includes("reel") || sh.querySelector('a[href*="/shorts/"]')) hide(sh);
+      });
+    document.querySelectorAll('a[href*="/shorts/"]').forEach((a) => {
+      const c = a.closest(
+        "ytd-video-renderer, ytd-grid-video-renderer, ytd-rich-item-renderer," +
+          "ytd-compact-video-renderer, ytm-shorts-lockup-view-model, ytd-reel-item-renderer"
+      );
+      if (c) hide(c);
+    });
+  }
+
   function applyDomFilters() {
     document.querySelectorAll("[data-ytf-hidden]").forEach(show);
     if (YTYF.hasDomFilter(settings)) {
-      if (settings.hideShorts) {
-        document
-          .querySelectorAll("ytd-reel-shelf-renderer, ytd-rich-shelf-renderer")
-          .forEach((shelf) => {
-            if (shelf.querySelector('a[href*="/shorts/"]')) hide(shelf);
-          });
-      }
+      if (settings.hideShorts) hideShortsUI();
       document.querySelectorAll(RENDERER_SEL).forEach((el) => {
         if (!matches(el, settings)) hide(el);
       });
@@ -331,25 +344,6 @@
     return d;
   }
 
-  function refreshPresets() {
-    const sel = document.getElementById(PRESET_ID);
-    if (!sel) return;
-    YTYF.loadPresets((presets) => {
-      const names = Object.keys(presets).sort();
-      sel.innerHTML = "";
-      const ph = document.createElement("option");
-      ph.value = "";
-      ph.textContent = t("presetsPlaceholder", "Presets…");
-      sel.appendChild(ph);
-      names.forEach((n) => {
-        const o = document.createElement("option");
-        o.value = n;
-        o.textContent = n;
-        sel.appendChild(o);
-      });
-    });
-  }
-
   function buildPanel() {
     const panel = document.createElement("div");
     panel.className = "ytyf-panel";
@@ -360,49 +354,6 @@
     title.className = "ytyf-title";
     title.textContent = t("panelTitle", "Filter YouTube results");
     panel.appendChild(title);
-
-    // Presets
-    const presetSel = document.createElement("select");
-    presetSel.id = PRESET_ID;
-    presetSel.className = "ytyf-input ytyf-preset-select";
-    presetSel.setAttribute("aria-label", t("presets", "Presets"));
-    presetSel.addEventListener("change", () => {
-      const name = presetSel.value;
-      if (!name) return;
-      YTYF.loadPresets((presets) => {
-        if (presets[name]) {
-          settings = YTYF.normalize(presets[name]);
-          YTYF.save(settings);
-          syncPanel();
-          applyDomFilters();
-        }
-      });
-    });
-    const saveBtn = document.createElement("button");
-    saveBtn.type = "button";
-    saveBtn.className = "ytyf-mini";
-    saveBtn.textContent = t("save", "Save");
-    saveBtn.title = t("savePreset", "Save current filters as a preset");
-    saveBtn.addEventListener("click", () => {
-      const name = window.prompt(t("presetName", "Preset name:"));
-      if (name && name.trim()) {
-        YTYF.savePreset(name.trim(), settings, () => refreshPresets());
-      }
-    });
-    const delBtn = document.createElement("button");
-    delBtn.type = "button";
-    delBtn.className = "ytyf-mini";
-    delBtn.textContent = t("delete", "Delete");
-    delBtn.title = t("deletePreset", "Delete the selected preset");
-    delBtn.addEventListener("click", () => {
-      const name = presetSel.value;
-      if (name) YTYF.deletePreset(name, () => refreshPresets());
-    });
-    panel.appendChild(row(t("presets", "Presets"), presetSel, saveBtn, delBtn));
-
-    const hr1 = document.createElement("div");
-    hr1.className = "ytyf-hr";
-    panel.appendChild(hr1);
 
     // Year range
     panel.appendChild(
@@ -572,7 +523,6 @@
     panel.addEventListener("click", (e) => e.stopPropagation());
     document.body.appendChild(panel);
 
-    refreshPresets();
     syncPanel();
   }
 
