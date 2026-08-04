@@ -1,6 +1,6 @@
 {
-  "extName": { "message": "YouTube Year Filter" },
-  "extDescription": { "message": "Filter YouTube results: upload-year range, hide Shorts/watched, duration & minimum-view limits, keyword & channel blocklists." },
+  "extName": { "message": "Search Filters for YouTube" },
+  "extDescription": { "message": "Sort YouTube results and filter them by upload year, duration, view count, Shorts, watched videos, keywords and channels." },
   "filters": { "message": "Filters" },
   "panelTitle": { "message": "Filter YouTube results" },
   "sortBy": { "message": "Sort by" },

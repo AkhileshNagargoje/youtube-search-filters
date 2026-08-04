@@ -1,6 +1,6 @@
-# 📅 YouTube Filter
+# 🔍 Search Filters for YouTube
 
-> A lightweight Chrome/Edge extension that filters YouTube results — by **upload year**, and by **hiding Shorts, off-length videos, and low-view clips**.
+> A lightweight Chrome/Edge extension that gives YouTube search the filters it's missing — **sort** results properly, restrict them to an **upload-year range**, and hide **Shorts, watched videos, off-length clips, low-view uploads, and blocked keywords/channels**.
 
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)

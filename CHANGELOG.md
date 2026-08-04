@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## [1.10.0] - 2026-08-05
+
+### Changed
+- **Renamed to "Search Filters for YouTube".** The old name ("YouTube Year
+  Filter") only described one of the features — the extension now also sorts
+  results and filters by duration, views, Shorts, watched state, keywords and
+  channels. The `... for YouTube` form is also the pattern stores expect, since
+  leading with a trademark implies an official app.
+- The extension name and description are now supplied through `_locales`
+  (`__MSG_extName__` / `__MSG_extDescription__`), so translators can localise
+  them along with the rest of the UI.
+
+The GitHub repository URL is unchanged.
+
 ## [1.9.1] - 2026-08-05
 
 ### Fixed

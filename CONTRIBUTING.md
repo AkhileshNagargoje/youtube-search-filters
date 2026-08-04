@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in improving YouTube Year Filter! 🎉
+Thanks for your interest in improving Search Filters for YouTube! 🎉
 
 ## Getting started
 
