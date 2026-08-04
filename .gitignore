@@ -13,7 +13,7 @@ venv/
 
 # Node
 node_modules/
-package-lock.json
+# package-lock.json is committed so CI can use `npm ci` (reproducible installs)
 
 # Build output
 *.zip

@@ -2,6 +2,7 @@
 
 > A lightweight Chrome/Edge extension that gives YouTube search the filters it's missing — **sort** results properly, restrict them to an **upload-year range**, and hide **Shorts, watched videos, off-length clips, low-view uploads, and blocked keywords/channels**.
 
+[![CI](https://github.com/AkhileshNagargoje/youtube-search-filters/actions/workflows/ci.yml/badge.svg)](https://github.com/AkhileshNagargoje/youtube-search-filters/actions/workflows/ci.yml)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 ![No tracking](https://img.shields.io/badge/tracking-none-brightgreen)
@@ -80,9 +81,17 @@ can't be read are always kept, so nothing is hidden by mistake.
 ## 🧪 Tests
 
 ```bash
-npm install   # jsdom (dev only)
-npm test      # runs tools/test.js against a mock YouTube DOM
+npm install       # jsdom (dev only)
+npm run check     # validate + test
 ```
+
+- `npm run validate` — static checks on the package: every file and `__MSG_`
+  placeholder the manifest references exists, every `t()` key is translatable,
+  the manifest and package versions agree, and host permissions stay
+  YouTube-only.
+- `npm test` — behavioural checks (64 assertions) against a mock YouTube DOM.
+
+Both run on every push and pull request via [GitHub Actions](.github/workflows/ci.yml).
 
 ## 📁 Project structure
 
@@ -96,8 +105,10 @@ npm test      # runs tools/test.js against a mock YouTube DOM
 ├── icons/             # 16/32/48/128 px PNG icons
 ├── docs/preview.svg   # README preview image
 ├── package.json       # npm test script + jsdom devDependency
+├── .github/workflows/ # CI: validate + test on every push/PR
 └── tools/
     ├── make_icons.py  # Regenerate icons (requires Pillow)
+    ├── validate.js    # Static package checks
     └── test.js        # jsdom integration test (64 assertions)
 ```
 

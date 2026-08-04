@@ -4,7 +4,9 @@
   "description": "Sort YouTube results and filter them by upload year, duration, view count, Shorts, watched videos, keywords and channels.",
   "private": true,
   "scripts": {
-    "test": "node tools/test.js"
+    "validate": "node tools/validate.js",
+    "test": "node tools/test.js",
+    "check": "npm run validate && npm test"
   },
   "devDependencies": {
     "jsdom": "^24.0.0"
