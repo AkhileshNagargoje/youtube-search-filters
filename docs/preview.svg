@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 440" font-family="Roboto, Arial, sans-serif">
-  <rect width="760" height="440" fill="#0f0f0f"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 500" font-family="Roboto, Arial, sans-serif">
+  <rect width="760" height="500" fill="#0f0f0f"/>
 
   <!-- masthead -->
   <rect x="0" y="0" width="760" height="56" fill="#0f0f0f"/>
@@ -21,55 +21,62 @@
 
   <!-- panel -->
   <g>
-    <rect x="452" y="66" width="292" height="352" rx="14" fill="#282828" stroke="#3f3f3f"/>
+    <rect x="452" y="66" width="292" height="416" rx="14" fill="#282828" stroke="#3f3f3f"/>
     <text x="470" y="94" fill="#f1f1f1" font-size="14" font-weight="600">Filter YouTube results</text>
 
+    <!-- sort -->
+    <text x="470" y="118" fill="#aaa" font-size="12">Sort by</text>
+    <rect x="470" y="126" width="260" height="28" rx="8" fill="#121212" stroke="#3f3f3f"/>
+    <text x="480" y="144" fill="#ddd" font-size="12">View count</text>
+    <path d="M714 137 l5 5 l5 -5" fill="none" stroke="#888" stroke-width="1.5"/>
+
     <!-- upload year -->
-    <text x="470" y="130" fill="#aaa" font-size="13">Upload year</text>
-    <rect x="590" y="116" width="60" height="26" rx="8" fill="#121212" stroke="#3f3f3f"/>
-    <text x="600" y="133" fill="#ddd" font-size="12">Any</text>
-    <text x="656" y="133" fill="#888" font-size="12">–</text>
-    <rect x="668" y="116" width="62" height="26" rx="8" fill="#121212" stroke="#3f3f3f"/>
-    <text x="678" y="133" fill="#ddd" font-size="12">2019</text>
+    <text x="470" y="182" fill="#aaa" font-size="13">Upload year</text>
+    <rect x="590" y="168" width="60" height="26" rx="8" fill="#121212" stroke="#3f3f3f"/>
+    <text x="600" y="185" fill="#ddd" font-size="12">Any</text>
+    <text x="656" y="185" fill="#888" font-size="12">–</text>
+    <rect x="668" y="168" width="62" height="26" rx="8" fill="#121212" stroke="#3f3f3f"/>
+    <text x="678" y="185" fill="#ddd" font-size="12">2019</text>
 
     <!-- hide shorts -->
-    <text x="470" y="170" fill="#aaa" font-size="13">Hide Shorts</text>
-    <rect x="690" y="158" width="40" height="22" rx="11" fill="#cc0000"/>
-    <circle cx="719" cy="169" r="8" fill="#fff"/>
+    <text x="470" y="222" fill="#aaa" font-size="13">Hide Shorts</text>
+    <rect x="690" y="210" width="40" height="22" rx="11" fill="#cc0000"/>
+    <circle cx="719" cy="221" r="8" fill="#fff"/>
 
     <!-- hide watched -->
-    <text x="470" y="202" fill="#aaa" font-size="13">Hide watched</text>
-    <rect x="690" y="190" width="40" height="22" rx="11" fill="#bbb"/>
-    <circle cx="701" cy="201" r="8" fill="#fff"/>
+    <text x="470" y="254" fill="#aaa" font-size="13">Hide watched</text>
+    <rect x="690" y="242" width="40" height="22" rx="11" fill="#bbb"/>
+    <circle cx="701" cy="253" r="8" fill="#fff"/>
 
     <!-- duration -->
-    <text x="470" y="234" fill="#aaa" font-size="13">Duration (min)</text>
-    <rect x="588" y="220" width="60" height="26" rx="8" fill="#121212" stroke="#3f3f3f"/>
-    <text x="598" y="237" fill="#666" font-size="12">min</text>
-    <text x="654" y="237" fill="#888" font-size="12">–</text>
-    <rect x="668" y="220" width="62" height="26" rx="8" fill="#121212" stroke="#3f3f3f"/>
-    <text x="678" y="237" fill="#666" font-size="12">max</text>
+    <text x="470" y="286" fill="#aaa" font-size="13">Duration (min)</text>
+    <rect x="588" y="272" width="60" height="26" rx="8" fill="#121212" stroke="#3f3f3f"/>
+    <text x="598" y="289" fill="#666" font-size="12">min</text>
+    <text x="654" y="289" fill="#888" font-size="12">–</text>
+    <rect x="668" y="272" width="62" height="26" rx="8" fill="#121212" stroke="#3f3f3f"/>
+    <text x="678" y="289" fill="#666" font-size="12">max</text>
 
     <!-- min views -->
-    <text x="470" y="266" fill="#aaa" font-size="13">Min views</text>
-    <rect x="600" y="252" width="130" height="26" rx="8" fill="#121212" stroke="#3f3f3f"/>
-    <text x="610" y="269" fill="#ddd" font-size="12">10000</text>
+    <text x="470" y="318" fill="#aaa" font-size="13">Min views</text>
+    <rect x="600" y="304" width="130" height="26" rx="8" fill="#121212" stroke="#3f3f3f"/>
+    <text x="610" y="321" fill="#ddd" font-size="12">10000</text>
 
     <!-- keyword block -->
-    <text x="470" y="298" fill="#aaa" font-size="12">Hide titles containing</text>
-    <rect x="470" y="306" width="260" height="28" rx="8" fill="#121212" stroke="#3f3f3f"/>
-    <text x="480" y="324" fill="#ddd" font-size="12">reaction, tier list</text>
+    <text x="470" y="350" fill="#aaa" font-size="12">Hide titles containing</text>
+    <rect x="470" y="358" width="260" height="28" rx="8" fill="#121212" stroke="#3f3f3f"/>
+    <text x="480" y="376" fill="#ddd" font-size="12">reaction, tier list</text>
 
     <!-- channel block -->
-    <text x="470" y="356" fill="#aaa" font-size="12">Hide channels</text>
-    <rect x="470" y="364" width="260" height="10" rx="5" fill="#121212" stroke="#3f3f3f"/>
+    <text x="470" y="406" fill="#aaa" font-size="12">Hide channels</text>
+    <rect x="470" y="414" width="260" height="28" rx="8" fill="#121212" stroke="#3f3f3f"/>
+    <text x="480" y="432" fill="#666" font-size="12">e.g. channel name</text>
 
     <!-- footer -->
-    <rect x="470" y="386" width="260" height="1" fill="#3f3f3f"/>
-    <rect x="560" y="394" width="72" height="30" rx="8" fill="none" stroke="#3f3f3f"/>
-    <text x="596" y="414" fill="#f1f1f1" font-size="12" text-anchor="middle">Clear all</text>
-    <rect x="644" y="394" width="86" height="30" rx="8" fill="#cc0000"/>
-    <text x="687" y="414" fill="#fff" font-size="13" font-weight="600" text-anchor="middle">Apply</text>
+    <rect x="470" y="452" width="260" height="1" fill="#3f3f3f"/>
+    <rect x="560" y="460" width="72" height="28" rx="8" fill="none" stroke="#3f3f3f"/>
+    <text x="596" y="479" fill="#f1f1f1" font-size="12" text-anchor="middle">Clear all</text>
+    <rect x="644" y="460" width="86" height="28" rx="8" fill="#cc0000"/>
+    <text x="687" y="479" fill="#fff" font-size="13" font-weight="600" text-anchor="middle">Apply</text>
   </g>
 
   <!-- faded results behind -->
@@ -77,6 +84,7 @@
     <rect x="24" y="88" width="240" height="135" rx="8" fill="#1c1c1c"/>
     <rect x="24" y="232" width="180" height="12" rx="3" fill="#333"/>
     <rect x="24" y="252" width="120" height="10" rx="3" fill="#282828"/>
-    <rect x="24" y="300" width="240" height="120" rx="8" fill="#1c1c1c"/>
+    <rect x="24" y="300" width="240" height="135" rx="8" fill="#1c1c1c"/>
+    <rect x="24" y="444" width="180" height="12" rx="3" fill="#333"/>
   </g>
 </svg>

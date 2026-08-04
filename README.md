@@ -31,6 +31,17 @@ YouTube's built-in filters are coarse and there's no way to say *"only videos up
 
 ## 🛠 How it works
 
+**Sorting** drives YouTube's own sort through the `sp` search parameter (a base64
+protobuf whose first field is the sort order). Because the sort happens on
+YouTube's side, it reorders the **entire** result set — not just the cards
+currently loaded, which is all a page-level sort could reach.
+
+| Sort | `sp` value |
+|---|---|
+| Upload date (newest) | `CAI=` |
+| View count | `CAM=` |
+| Rating | `CAE=` |
+
 **Year range** uses YouTube's undocumented `before:`/`after:` search operators — the extension rewrites your query:
 
 | You search | Range | Rewritten query |
@@ -55,16 +66,16 @@ can't be read are always kept, so nothing is hidden by mistake.
 2. Open `chrome://extensions` (or `edge://extensions`).
 3. Enable **Developer mode** (top-right).
 4. Click **Load unpacked** and select this folder.
-5. Open YouTube — the year control appears next to the search bar.
+5. Open YouTube — a **Filters** button appears next to the search bar.
 
 ## 🚀 Usage
 
-1. On any YouTube page, click the floating **🔻 Filters** button (bottom-right corner) — a panel opens.
-2. Set any of: **Upload year** range, **Hide Shorts**, **Duration** (min/max minutes), **Minimum views**.
-3. Year settings apply to your **next search**; Hide Shorts / duration / views apply **instantly** to the current page.
-4. The button shows a red **count badge** for how many results are hidden, and **Clear all** resets everything. Click outside the panel to close it.
+1. On any YouTube page, click the **Filters** button next to the search bar — a panel opens beneath it.
+2. Set any of: **Sort by**, **Upload year** range, **Hide Shorts**, **Hide watched**, **Duration** (min/max minutes), **Minimum views**, and the **keyword / channel blocklists**.
+3. Filters that hide results apply **instantly** to the current page. **Sort** and the **year range** need a fresh search, so changing the sort re-runs it immediately and **Apply** re-runs it with the current query.
+4. A red **count badge** on the button shows how many results are hidden. **Clear all** resets everything; click outside the panel or press <kbd>Esc</kbd> to close it.
 
-> The button is pinned to the page (not YouTube's toolbar), so nothing in YouTube's layout can hide or dismiss it. The extension-icon popup offers the same controls and stays in sync.
+> The panel itself is attached to the page body and positioned under the button, so YouTube's layout can't clip or dismiss it. The toolbar-icon popup offers the same controls and stays in sync.
 
 ## 🧪 Tests
 
@@ -87,7 +98,7 @@ npm test      # runs tools/test.js against a mock YouTube DOM
 ├── package.json       # npm test script + jsdom devDependency
 └── tools/
     ├── make_icons.py  # Regenerate icons (requires Pillow)
-    └── test.js        # jsdom integration test (24 assertions)
+    └── test.js        # jsdom integration test (64 assertions)
 ```
 
 ## 🔧 Development
@@ -103,8 +114,10 @@ python tools/make_icons.py
 
 ## ⚠️ Notes & limitations
 
-- The `before:`/`after:` operators filter by **upload date**. They're supported by YouTube but undocumented, so behavior can change.
-- Ranges are inclusive of whole years (e.g. "up to 2019" includes all of 2019).
+- The `before:`/`after:` operators and the `sp` sort value are **undocumented**, so YouTube can change their behaviour at any time. The year range is enforced on-page as well, so it keeps working even when YouTube ignores the operator.
+- Year ranges are inclusive of whole years ("up to 2019" includes all of 2019). Upload dates on result cards are **relative** ("12 years ago"), so each estimate is widened by one unit and a video is hidden only when its entire possible date range falls outside your filter. Cards whose date can't be read are always kept.
+- YouTube's view-count sort ranks a set of results it considers relevant — it isn't a global "most viewed on YouTube" ordering.
+- The on-page filters read YouTube's rendered markup, so a large YouTube redesign can require selector updates. `npm test` covers this against a mock DOM.
 
 ## 🌍 Translations
 
