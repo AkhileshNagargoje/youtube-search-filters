@@ -153,6 +153,11 @@ function build(target) {
   });
 
   fs.mkdirSync(DIST, { recursive: true });
+  // Drop any previous build for this target, so a stale version can never be
+  // picked up by a release upload.
+  for (const f of fs.readdirSync(DIST)) {
+    if (f.endsWith(`-${target}.zip`)) fs.unlinkSync(path.join(DIST, f));
+  }
   const out = path.join(DIST, `search-filters-for-youtube-${manifest.version}-${target}.zip`);
   const buf = zip(entries);
   fs.writeFileSync(out, buf);
