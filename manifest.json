@@ -4,7 +4,7 @@
   "version": "1.10.0",
   "default_locale": "en",
   "description": "__MSG_extDescription__",
-  "homepage_url": "https://github.com/AkhileshNagargoje/youtube-year-filter",
+  "homepage_url": "https://github.com/AkhileshNagargoje/youtube-search-filters",
   "permissions": [
     "storage"
   ],
