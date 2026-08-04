@@ -94,6 +94,9 @@
 
   function runSearch(rawQuery) {
     if (!YTYF.buildQuery(rawQuery, settings)) return;
+    // Writes are debounced; force the pending one out before we navigate away,
+    // otherwise the setting that triggered this search may never be stored.
+    YTYF.flush();
     window.location.href = YTYF.searchUrl(rawQuery, settings);
   }
 

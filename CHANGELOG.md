@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented here.
 
+## [1.9.1] - 2026-08-05
+
+### Fixed
+- **Sorting had no effect.** The `sp` values were stored already percent-encoded
+  (`CAM%3D`) and concatenated onto the URL, so they were encoded a second time
+  (`CAM%253D`). YouTube doesn't recognise that and silently falls back to
+  relevance — the sort appeared to do nothing. Values are now stored decoded
+  (`CAM=`) and the URL is assembled with `URLSearchParams`, which encodes each
+  value exactly once. A regression test asserts the parameter *decodes* back to
+  `CAM=` and that the URL never contains `%25`.
+- The setting that triggers a search is now flushed to storage before
+  navigating, so a debounced write can't be lost to the page unload.
+
 ## [1.9.0] - 2026-08-05
 
 ### Added

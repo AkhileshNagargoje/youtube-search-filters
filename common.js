@@ -27,10 +27,13 @@
   // YouTube's own search sort, carried in the `sp` query parameter. The value
   // is a base64 protobuf whose first field is the sort order:
   // 0 relevance, 1 rating, 2 upload date, 3 view count.
+  // Stored *decoded* — the URL builder percent-encodes it exactly once. Storing
+  // "CAM%3D" here and concatenating it produced "CAM%253D", which YouTube
+  // silently ignores, falling back to relevance.
   const SORT_PARAMS = {
-    date: "CAI%3D",
-    views: "CAM%3D",
-    rating: "CAE%3D",
+    date: "CAI=",
+    views: "CAM=",
+    rating: "CAE=",
   };
 
   function defaults() {
@@ -151,13 +154,13 @@
   }
 
   // Full results URL, including YouTube's native sort when one is chosen.
+  // Built with URLSearchParams so every value is encoded exactly once.
   function searchUrl(rawQuery, s) {
-    let url =
-      "https://www.youtube.com/results?search_query=" +
-      encodeURIComponent(buildQuery(rawQuery, s));
+    const params = new URLSearchParams();
+    params.set("search_query", buildQuery(rawQuery, s));
     const sp = SORT_PARAMS[s && s.sort];
-    if (sp) url += "&sp=" + sp;
-    return url;
+    if (sp) params.set("sp", sp);
+    return "https://www.youtube.com/results?" + params.toString();
   }
 
   function hasSort(s) {

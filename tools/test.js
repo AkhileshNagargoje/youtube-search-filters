@@ -223,14 +223,22 @@ fire(toSel, "change", "Event");
 check("E2E: clearing the year restores the recent video", !hidden("vidRecent"));
 
 // ---- sort (YouTube's native `sp` parameter) ------------------------------
-check("relevance adds no sp param", Y.searchUrl("ai", Y.normalize({})) === "https://www.youtube.com/results?search_query=ai");
-check("sort by upload date -> sp=CAI", Y.searchUrl("ai", Y.normalize({ sort: "date" })).endsWith("&sp=CAI%3D"));
-check("sort by views -> sp=CAM", Y.searchUrl("ai", Y.normalize({ sort: "views" })).endsWith("&sp=CAM%3D"));
-check("sort by rating -> sp=CAE", Y.searchUrl("ai", Y.normalize({ sort: "rating" })).endsWith("&sp=CAE%3D"));
+const spOf = (opts) =>
+  new window.URL(Y.searchUrl("ai", Y.normalize(opts))).searchParams.get("sp");
+const qOf = (opts) =>
+  new window.URL(Y.searchUrl("ai", Y.normalize(opts))).searchParams.get("search_query");
+
+check("relevance adds no sp param", spOf({}) === null);
+// Regression: the value must decode to "CAM=", not the literal "CAM%3D".
+// Storing it pre-encoded produced sp=CAM%253D, which YouTube ignores.
+check("sort by upload date decodes to CAI=", spOf({ sort: "date" }) === "CAI=");
+check("sort by views decodes to CAM=", spOf({ sort: "views" }) === "CAM=");
+check("sort by rating decodes to CAE=", spOf({ sort: "rating" }) === "CAE=");
+check("sp is not double-encoded", !Y.searchUrl("ai", Y.normalize({ sort: "views" })).includes("%25"));
 check(
   "sort combines with the year range",
-  Y.searchUrl("ai", Y.normalize({ sort: "views", to: "2019" })) ===
-    "https://www.youtube.com/results?search_query=ai%20before%3A2020-01-01&sp=CAM%3D"
+  spOf({ sort: "views", to: "2019" }) === "CAM=" &&
+    qOf({ sort: "views", to: "2019" }) === "ai before:2020-01-01"
 );
 check("an unknown sort value is ignored", Y.normalize({ sort: "bogus" }).sort === "");
 check("sort alone triggers a search re-run", Y.needsSearchRerun(Y.normalize({ sort: "date" })));
