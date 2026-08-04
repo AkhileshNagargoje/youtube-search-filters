@@ -222,6 +222,25 @@ toSel.value = "";
 fire(toSel, "change", "Event");
 check("E2E: clearing the year restores the recent video", !hidden("vidRecent"));
 
+// ---- sort (YouTube's native `sp` parameter) ------------------------------
+check("relevance adds no sp param", Y.searchUrl("ai", Y.normalize({})) === "https://www.youtube.com/results?search_query=ai");
+check("sort by upload date -> sp=CAI", Y.searchUrl("ai", Y.normalize({ sort: "date" })).endsWith("&sp=CAI%3D"));
+check("sort by views -> sp=CAM", Y.searchUrl("ai", Y.normalize({ sort: "views" })).endsWith("&sp=CAM%3D"));
+check("sort by rating -> sp=CAE", Y.searchUrl("ai", Y.normalize({ sort: "rating" })).endsWith("&sp=CAE%3D"));
+check(
+  "sort combines with the year range",
+  Y.searchUrl("ai", Y.normalize({ sort: "views", to: "2019" })) ===
+    "https://www.youtube.com/results?search_query=ai%20before%3A2020-01-01&sp=CAM%3D"
+);
+check("an unknown sort value is ignored", Y.normalize({ sort: "bogus" }).sort === "");
+check("sort alone triggers a search re-run", Y.needsSearchRerun(Y.normalize({ sort: "date" })));
+check("no sort and no year -> no re-run", !Y.needsSearchRerun(Y.normalize({})));
+check("sort alone marks the filter active", Y.isActive(Y.normalize({ sort: "date" })));
+
+const sortSel = $("ytyf-sort");
+check("sort dropdown is in the panel", !!sortSel);
+check("sort dropdown offers 4 options", sortSel && sortSel.options.length === 4);
+
 // ---- debounced writes (storage.sync allows only 120/min) -----------------
 syncWrites = 0;
 const kw2 = $("ytyf-keywords");

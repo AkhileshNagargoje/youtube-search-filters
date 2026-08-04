@@ -16,7 +16,8 @@ YouTube's built-in filters are coarse and there's no way to say *"only videos up
 
 ## ✨ Features
 
-- 🔎 **Upload-year range** — set a *from* and/or *up to* year (works via YouTube's search operators).
+- ↕️ **Sort results** — by relevance, upload date, view count, or rating (drives YouTube's own sort, so it reorders *all* results, not just the visible ones).
+- 🔎 **Upload-year range** — set a *from* and/or *up to* year, enforced on-page.
 - 🩳 **Hide Shorts** — strip Shorts shelves and Shorts videos from search, home, and sidebar.
 - 👁️ **Hide watched** — hide videos you've already partly watched (the red progress bar).
 - ⏱️ **Duration filter** — hide anything shorter than a min and/or longer than a max (in minutes).

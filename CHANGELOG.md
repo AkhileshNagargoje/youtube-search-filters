@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented here.
 
+## [1.9.0] - 2026-08-05
+
+### Added
+- **Sort results** by *Relevance*, *Upload date (newest)*, *View count*, or
+  *Rating*. This drives YouTube's own sort via the `sp` search parameter, so
+  it reorders the whole result set rather than just what's on screen — and it
+  combines with the year range and every other filter.
+- Changing the sort while viewing results re-runs the search immediately
+  (matching YouTube's own sort menu); otherwise it applies to the next search.
+
+### Changed
+- Search re-runs are now triggered by a sort *or* a year range (previously only
+  a year range), and the query is read from the URL so applying a sort works
+  even after the search box has been edited.
+
 ## [1.8.0] - 2026-08-05
 
 ### Fixed

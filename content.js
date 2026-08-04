@@ -15,6 +15,7 @@
   const COUNT_ID = "ytyf-count";
 
   const F = {
+    sort: "ytyf-sort",
     from: "ytyf-from",
     to: "ytyf-to",
     hideShorts: "ytyf-hideshorts",
@@ -81,16 +82,23 @@
     );
   }
 
+  // The query currently being viewed, if we're on a results page.
+  function currentQuery() {
+    try {
+      const q = new URL(window.location.href).searchParams.get("search_query");
+      if (q) return YTYF.stripDateOperators(q);
+    } catch (e) {}
+    const input = getSearchInput();
+    return input ? YTYF.stripDateOperators(input.value.trim()) : "";
+  }
+
   function runSearch(rawQuery) {
-    const finalQuery = YTYF.buildQuery(rawQuery, settings);
-    if (!finalQuery) return;
-    window.location.href =
-      "https://www.youtube.com/results?search_query=" +
-      encodeURIComponent(finalQuery);
+    if (!YTYF.buildQuery(rawQuery, settings)) return;
+    window.location.href = YTYF.searchUrl(rawQuery, settings);
   }
 
   function handleKeydown(e) {
-    if (e.key !== "Enter" || !YTYF.hasYearFilter(settings)) return;
+    if (e.key !== "Enter" || !YTYF.needsSearchRerun(settings)) return;
     const input = getSearchInput();
     if (!input || e.target !== input) return;
     const raw = input.value.trim();
@@ -101,7 +109,7 @@
   }
 
   function handleSearchClick(e) {
-    if (!YTYF.hasYearFilter(settings)) return;
+    if (!YTYF.needsSearchRerun(settings)) return;
     const btn = e.target.closest(
       "#search-icon-legacy, button[aria-label='Search'], ytd-searchbox button"
     );
@@ -323,6 +331,33 @@
     applyDomFilters();
   }
 
+  function sortSelect(id) {
+    const sel = document.createElement("select");
+    sel.id = id;
+    sel.className = "ytyf-input ytyf-input-wide";
+    sel.setAttribute("aria-label", t("sortBy", "Sort by"));
+    [
+      ["", t("sortRelevance", "Relevance")],
+      ["date", t("sortDate", "Upload date (newest)")],
+      ["views", t("sortViews", "View count")],
+      ["rating", t("sortRating", "Rating")],
+    ].forEach(([value, label]) => {
+      const o = document.createElement("option");
+      o.value = value;
+      o.textContent = label;
+      sel.appendChild(o);
+    });
+    sel.addEventListener("change", () => {
+      setField("sort", sel.value);
+      // Sorting is done by YouTube, so it needs a fresh search. Re-run right
+      // away when we're already looking at results (matches YouTube's own
+      // sort menu); otherwise it applies to the next search.
+      const q = currentQuery();
+      if (q && /\/results/.test(window.location.pathname)) runSearch(q);
+    });
+    return sel;
+  }
+
   function yearSelect(id, key) {
     const sel = document.createElement("select");
     sel.id = id;
@@ -416,6 +451,9 @@
     title.textContent = t("panelTitle", "Filter YouTube results");
     panel.appendChild(title);
 
+    // Sort (YouTube-side)
+    panel.appendChild(rowStacked(t("sortBy", "Sort by"), sortSelect(F.sort)));
+
     // Year range
     panel.appendChild(
       row(
@@ -480,9 +518,8 @@
     apply.textContent = t("apply", "Apply");
     apply.addEventListener("click", () => {
       applyDomFilters();
-      const input = getSearchInput();
-      const raw = input ? input.value.trim() : "";
-      if (YTYF.hasYearFilter(settings) && raw) {
+      const raw = currentQuery();
+      if (YTYF.needsSearchRerun(settings) && raw) {
         runSearch(raw);
         return;
       }
@@ -501,6 +538,7 @@
       const e = document.getElementById(id);
       if (e) e.value = v;
     };
+    set(F.sort, settings.sort);
     set(F.from, settings.from);
     set(F.to, settings.to);
     set(F.minDuration, settings.minDuration);

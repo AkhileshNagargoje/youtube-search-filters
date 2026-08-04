@@ -11,6 +11,7 @@
 
   const fromEl = el("from");
   const toEl = el("to");
+  const sortEl = el("sort");
   const hideShorts = el("hideShorts");
   const hideWatched = el("hideWatched");
   const minDuration = el("minDuration");
@@ -36,8 +37,15 @@
     return String(n);
   }
 
+  const SORT_LABELS = {
+    date: "newest first",
+    views: "most viewed",
+    rating: "top rated",
+  };
+
   function describe(s) {
     const bits = [YTYF.describeYear(s)];
+    if (SORT_LABELS[s.sort]) bits.push(SORT_LABELS[s.sort]);
     if (s.hideShorts) bits.push("no Shorts");
     const min = parseInt(s.minDuration, 10);
     const max = parseInt(s.maxDuration, 10);
@@ -66,6 +74,7 @@
 
   // Full push of values into the inputs — only on load and Clear.
   function renderInputs() {
+    sortEl.value = settings.sort;
     fromEl.value = settings.from;
     toEl.value = settings.to;
     hideShorts.checked = settings.hideShorts;
@@ -80,6 +89,7 @@
 
   function readSettings() {
     return {
+      sort: sortEl.value,
       from: fromEl.value.trim(),
       to: toEl.value.trim(),
       hideShorts: hideShorts.checked,
@@ -111,6 +121,7 @@
 
   numInputs.forEach((n) => n.addEventListener("input", commit));
   textInputs.forEach((n) => n.addEventListener("input", commit));
+  sortEl.addEventListener("change", commit);
   hideShorts.addEventListener("change", commit);
   hideWatched.addEventListener("change", commit);
 

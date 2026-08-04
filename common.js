@@ -24,8 +24,18 @@
     return fallback;
   }
 
+  // YouTube's own search sort, carried in the `sp` query parameter. The value
+  // is a base64 protobuf whose first field is the sort order:
+  // 0 relevance, 1 rating, 2 upload date, 3 view count.
+  const SORT_PARAMS = {
+    date: "CAI%3D",
+    views: "CAM%3D",
+    rating: "CAE%3D",
+  };
+
   function defaults() {
     return {
+      sort: "", // "" = relevance (YouTube's default)
       from: "",
       to: "",
       hideShorts: false,
@@ -41,6 +51,7 @@
   function normalize(obj) {
     if (!obj) return defaults();
     return {
+      sort: SORT_PARAMS[obj.sort] ? obj.sort : "",
       from: obj.from || "",
       to: obj.to || "",
       hideShorts: Boolean(obj.hideShorts),
@@ -137,6 +148,26 @@
     if (s.from) parts.push(`after:${parseInt(s.from, 10) - 1}-12-31`);
     if (s.to) parts.push(`before:${parseInt(s.to, 10) + 1}-01-01`);
     return parts.filter(Boolean).join(" ").trim();
+  }
+
+  // Full results URL, including YouTube's native sort when one is chosen.
+  function searchUrl(rawQuery, s) {
+    let url =
+      "https://www.youtube.com/results?search_query=" +
+      encodeURIComponent(buildQuery(rawQuery, s));
+    const sp = SORT_PARAMS[s && s.sort];
+    if (sp) url += "&sp=" + sp;
+    return url;
+  }
+
+  function hasSort(s) {
+    return Boolean(s && SORT_PARAMS[s.sort]);
+  }
+
+  // Whether submitting/applying should re-run the search rather than just
+  // filtering the current page.
+  function needsSearchRerun(s) {
+    return hasYearFilter(s) || hasSort(s);
   }
 
   // ---- locale-aware number parsing -----------------------------------------
@@ -294,7 +325,7 @@
   }
 
   function isActive(s) {
-    return hasYearFilter(s) || hasDomFilter(s);
+    return hasYearFilter(s) || hasDomFilter(s) || hasSort(s);
   }
 
   function describeYear(s) {
@@ -316,8 +347,12 @@
     save,
     flush,
     onChanged,
+    SORT_PARAMS,
     stripDateOperators,
     buildQuery,
+    searchUrl,
+    hasSort,
+    needsSearchRerun,
     parseNumberToken,
     parseViews,
     parseDuration,
