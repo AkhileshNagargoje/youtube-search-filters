@@ -53,12 +53,15 @@ const dom = new JSDOM(html, { runScripts: "outside-only", pretendToBeVisual: tru
 const { window } = dom;
 
 const store = {};
+let syncWrites = 0;
 window.chrome = {
+  runtime: {},
   storage: {
     sync: {
       get: (keys, cb) => cb(store),
-      set: (obj, cb) => { Object.assign(store, obj); if (cb) cb(); },
+      set: (obj, cb) => { syncWrites++; Object.assign(store, obj); if (cb) cb(); },
     },
+    local: { set: (obj, cb) => { Object.assign(store, obj); if (cb) cb(); } },
     onChanged: { addListener: () => {} },
   },
 };
@@ -160,6 +163,47 @@ doc.querySelector(".ytyf-clear").dispatchEvent(
 check("clear all restores vidLow", !hidden("vidLow"));
 check("clear all restores shortsShelf", !hidden("shortsShelf"));
 check("clear all restores vidReaction", !hidden("vidReaction"));
+
+// ---- locale-aware view parsing -------------------------------------------
+const Y = window.YTYF;
+[
+  ["1.2M views", null, 1200000],
+  ["1,234 views", null, 1234],
+  ["No views", null, 0],
+  ["1,2 Mio. Aufrufe", "de", 1200000],
+  ["12.345 Aufrufe", "de", 12345],
+  ["1,2 M de vues", "fr", 1200000],
+  ["12万 回視聴", "ja", 120000],
+  ["1.2 लाख व्यू", "hi", 120000],
+  ["12 B görüntüleme", "tr", 12000],
+  ["1,2 млн просмотров", "ru", 1200000],
+  ["12 mil visualizações", "pt", 12000],
+].forEach(([txt, lang, want]) =>
+  check("parseViews " + (lang || "en") + " " + JSON.stringify(txt), Y.parseViews(txt, lang) === want)
+);
+
+// ---- debounced writes (storage.sync allows only 120/min) -----------------
+syncWrites = 0;
+const kw2 = $("ytyf-keywords");
+"abcdefghij".split("").forEach((c) => {
+  kw2.value += c;
+  fire(kw2, "input", "Event");
+});
+check("10 keystrokes do not write immediately", syncWrites === 0);
+Y.flush();
+check("flush coalesces them into one write", syncWrites === 1);
+kw2.value = "";
+fire(kw2, "input", "Event");
+Y.flush();
+
+// ---- incremental filtering marks cards so they aren't re-judged ----------
+const hs2 = $("ytyf-hideshorts");
+hs2.checked = true;
+fire(hs2, "change", "Event");
+const stamped = doc.querySelectorAll("[data-ytf-epoch]").length;
+check("cards are stamped with an epoch", stamped > 0);
+hs2.checked = false;
+fire(hs2, "change", "Event");
 
 console.log("\n" + pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

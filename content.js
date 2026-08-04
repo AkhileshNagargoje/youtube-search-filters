@@ -49,7 +49,27 @@
     ".ytThumbnailOverlayProgressBarHost",
   ].join(",");
 
+  const META_SEL =
+    "#metadata-line span, .inline-metadata-item, " +
+    "#metadata-line .inline-metadata-item, " +
+    ".yt-content-metadata-view-model-wiz__metadata-text";
+
+  // "views" in the languages YouTube ships. Used to pick the right metadata
+  // item; if none matches we fall back to position (views come first).
+  const VIEW_WORDS =
+    /(view|aufruf|vues|visualiza|visning|näyttö|megtekint|zobrazen|wyświetl|görüntülem|izlenme|просмотр|перегляд|視聴|观看|觀看|조회|व्यू|बार देखा|مشاهدة|بازدید|lượt xem|ครั้ง|dilihat|weergaven|visualizzazioni)/i;
+
   let settings = YTYF.defaults();
+  // Bumped whenever settings change, so already-evaluated cards are re-checked.
+  let epoch = 0;
+
+  function pageLang() {
+    return (
+      (document.documentElement && document.documentElement.lang) ||
+      navigator.language ||
+      "en"
+    );
+  }
 
   // ---- search submission (year range) --------------------------------------
 
@@ -129,11 +149,20 @@
     return null;
   }
   function getViews(el) {
-    const items = el.querySelectorAll(
-      "#metadata-line span, .inline-metadata-item, #metadata-line .inline-metadata-item"
-    );
+    const items = el.querySelectorAll(META_SEL);
+    const lang = pageLang();
+    // Preferred: the item that actually says "views" in this locale.
     for (const it of items) {
-      if (/view/i.test(it.textContent)) return YTYF.parseViews(it.textContent);
+      if (VIEW_WORDS.test(it.textContent)) {
+        return YTYF.parseViews(it.textContent, lang);
+      }
+    }
+    // Fallback for locales/layouts we don't recognise: view count is rendered
+    // before the upload date, so take the first item containing a digit.
+    for (const it of items) {
+      if (/\d/.test(it.textContent)) {
+        return YTYF.parseViews(it.textContent, lang);
+      }
     }
     return null;
   }
@@ -213,11 +242,21 @@
     });
   }
 
-  function applyDomFilters() {
-    document.querySelectorAll("[data-ytf-hidden]").forEach(show);
+  // full=true re-evaluates every card (settings changed or page navigated).
+  // full=false only evaluates cards we haven't seen yet — this is what runs on
+  // every DOM mutation, so it must stay cheap on long infinite-scroll pages.
+  function applyDomFilters(full) {
+    if (full !== false) {
+      epoch++;
+      document.querySelectorAll("[data-ytf-hidden]").forEach(show);
+    }
+
     if (YTYF.hasDomFilter(settings)) {
+      const stamp = String(epoch);
       if (settings.hideShorts) hideShortsUI();
       document.querySelectorAll(RENDERER_SEL).forEach((el) => {
+        if (el.dataset.ytfEpoch === stamp) return; // already judged this pass
+        el.dataset.ytfEpoch = stamp;
         if (!matches(el, settings)) hide(el);
       });
     }
@@ -234,7 +273,7 @@
         : (cb) => setTimeout(cb, 16);
     raf(() => {
       scheduled = false;
-      applyDomFilters();
+      applyDomFilters(false); // incremental: only newly added cards
     });
   }
 
@@ -556,20 +595,31 @@
     YTYF.load((s) => {
       settings = s;
       injectUI();
+      observeRoot();
       syncPanel();
-      applyDomFilters();
+      applyDomFilters(true); // full pass: YouTube recycles cards across views
     });
   }
 
+  // Observe the app root rather than the whole document: YouTube mutates
+  // <head> and the player constantly, and none of that affects our filters.
   const observer = new MutationObserver(() => {
     if (!document.getElementById(BTN_ID)) injectUI();
     scheduleApply();
   });
-  if (document.documentElement) {
-    observer.observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-    });
+
+  let observedRoot = null;
+  function observeRoot() {
+    const root =
+      document.querySelector("ytd-app") ||
+      document.body ||
+      document.documentElement;
+    if (!root || root === observedRoot) return;
+    observer.disconnect();
+    observedRoot = root;
+    // childList only — we never observe attributes, so our own display/dataset
+    // writes can't re-trigger this callback.
+    observer.observe(root, { childList: true, subtree: true });
   }
 
   YTYF.onChanged((s) => {
@@ -583,6 +633,12 @@
   document.addEventListener("click", handleSearchClick, true);
   document.addEventListener("click", handleOutsideClick);
   document.addEventListener("yt-navigate-finish", init);
+
+  // Don't lose a debounced write if the user navigates away mid-edit.
+  window.addEventListener("pagehide", () => YTYF.flush());
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") YTYF.flush();
+  });
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);

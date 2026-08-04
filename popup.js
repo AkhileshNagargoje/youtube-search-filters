@@ -127,6 +127,11 @@
     renderInputs();
   });
 
+  // Writes are debounced (storage.sync allows only 120/min), so make sure the
+  // last edit is persisted when the popup is dismissed.
+  window.addEventListener("pagehide", () => YTYF.flush());
+  window.addEventListener("blur", () => YTYF.flush());
+
   YTYF.load((s) => {
     settings = s;
     renderInputs();

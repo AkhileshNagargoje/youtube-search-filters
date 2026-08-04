@@ -2,6 +2,33 @@
 
 All notable changes to this project are documented here.
 
+## [1.7.0] - 2026-08-05
+
+### Fixed
+- **Wrong videos were hidden on non-English YouTube.** View counts were parsed
+  with English assumptions, so `1,2 Mio. Aufrufe` read as 12,000,000 (10× too
+  high) and `12万 回視聴` as 12 (10,000× too low) — the minimum-views filter then
+  hid the wrong results silently. Parsing is now locale-aware: it detects
+  decimal vs. thousands separators, understands compact suffixes across
+  European, CJK, Indic, Arabic and Cyrillic locales, and applies per-language
+  overrides where a letter differs (Turkish `B` = *bin* = 1,000, not billion).
+  The view-count element is also located by "views" in ~25 languages, with a
+  positional fallback for the rest.
+- **Settings could silently fail to save.** `chrome.storage.sync` permits only
+  120 writes/minute, and the blocklist fields wrote on every keystroke. Writes
+  are now debounced (800 ms) and coalesced, `runtime.lastError` is checked, and
+  a failed sync write falls back to `storage.local` instead of being swallowed.
+  Pending writes are flushed on page hide / popup dismiss so nothing is lost.
+- **CPU use on long pages.** Every DOM mutation triggered a full unhide-and-
+  re-evaluate sweep of the entire document. Cards are now stamped per pass and
+  only newly added ones are judged; a full sweep runs solely when settings
+  change or the page navigates. The observer is scoped to `ytd-app` rather than
+  the whole document.
+
+### Testing
+- 38 assertions (was 24), covering locale parsing across 11 languages, write
+  debouncing/coalescing, and incremental filtering.
+
 ## [1.6.1] - 2026-08-01
 
 ### Fixed
