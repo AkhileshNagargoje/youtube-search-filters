@@ -1,6 +1,6 @@
 {
   "name": "youtube-search-filters",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "description": "Sort YouTube results and filter them by upload year, duration, view count, Shorts, watched videos, keywords and channels.",
   "private": true,
   "scripts": {

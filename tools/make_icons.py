@@ -1,7 +1,7 @@
 """Generate the extension icons (16/32/48/128 px) as PNGs.
 
-Design: a YouTube-red rounded square with a white play triangle and a small
-clock badge in the corner, signalling "video + time/year".
+Design: a YouTube-red rounded square with a white filter funnel — the same
+path used by the in-page "Filters" button, so the branding matches.
 Run:  python tools/make_icons.py
 """
 
@@ -13,14 +13,13 @@ SIZES = [16, 32, 48, 128]
 
 YT_RED = (255, 0, 0, 255)
 WHITE = (255, 255, 255, 255)
-DARK = (15, 15, 15, 255)
 
-# Render large, then downscale for crisp anti-aliasing.
-SS = 8  # supersample factor
+SS = 8  # supersample factor, downscaled with LANCZOS for clean edges
 
-
-def rounded_rect(draw, box, radius, fill):
-    draw.rounded_rectangle(box, radius=radius, fill=fill)
+# Funnel path in a 24x24 box — identical to the button's SVG:
+#   M3 5 h18 l-7 8 v5 l-4 2 v-7 z
+FUNNEL_24 = [(3, 5), (21, 5), (14, 13), (14, 18), (10, 20), (10, 13)]
+BOX = 24.0
 
 
 def make(size):
@@ -28,29 +27,21 @@ def make(size):
     img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
 
-    # Background rounded square
+    # Background rounded square.
     margin = int(S * 0.06)
-    rounded_rect(d, [margin, margin, S - margin, S - margin], radius=int(S * 0.22), fill=YT_RED)
+    d.rounded_rectangle(
+        [margin, margin, S - margin, S - margin], radius=int(S * 0.22), fill=YT_RED
+    )
 
-    # Play triangle (centred, slightly left to leave room for badge)
-    cx, cy = S * 0.46, S * 0.5
-    w, h = S * 0.30, S * 0.34
-    triangle = [
-        (cx - w / 2, cy - h / 2),
-        (cx - w / 2, cy + h / 2),
-        (cx + w / 2, cy),
-    ]
-    d.polygon(triangle, fill=WHITE)
-
-    # Clock badge (bottom-right)
-    r = S * 0.20
-    bx, by = S * 0.74, S * 0.74
-    d.ellipse([bx - r, by - r, bx + r, by + r], fill=WHITE)
-    d.ellipse([bx - r, by - r, bx + r, by + r], outline=DARK, width=max(1, int(S * 0.012)))
-    # clock hands
-    lw = max(1, int(S * 0.018))
-    d.line([(bx, by), (bx, by - r * 0.55)], fill=DARK, width=lw)  # minute hand up
-    d.line([(bx, by), (bx + r * 0.45, by)], fill=DARK, width=lw)  # hour hand right
+    # Funnel, scaled to ~74% of the tile and centred. Kept large so the shape
+    # is still legible at the 16 px toolbar size.
+    scale = (S * 0.74) / BOX
+    pts = [(x * scale, y * scale) for x, y in FUNNEL_24]
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    dx = (S - (max(xs) + min(xs))) / 2
+    dy = (S - (max(ys) + min(ys))) / 2
+    d.polygon([(x + dx, y + dy) for x, y in pts], fill=WHITE)
 
     return img.resize((size, size), Image.LANCZOS)
 
@@ -58,9 +49,8 @@ def make(size):
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     for s in SIZES:
-        icon = make(s)
-        path = os.path.join(OUT_DIR, f"icon{s}.png")
-        icon.save(path)
+        path = os.path.join(OUT_DIR, "icon%d.png" % s)
+        make(s).save(path)
         print("wrote", path)
 
 

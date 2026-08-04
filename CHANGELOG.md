@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented here.
 
+## [1.10.1] - 2026-08-05
+
+### Changed
+- **New icon** — a filter funnel replaces the old play-and-clock mark, which
+  still implied the extension only did year filtering. It reuses the exact path
+  from the in-page **Filters** button so the two match, and is sized to stay
+  legible at the 16 px toolbar size.
+
+### Docs
+- Corrected the README: Usage still described a floating bottom-right button
+  (moved back beside the search bar in 1.5.1), sorting was undocumented, and the
+  assertion count was stale. Regenerated the preview image to include Sort.
+
 ## [1.10.0] - 2026-08-05
 
 ### Changed
