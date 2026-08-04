@@ -1,6 +1,6 @@
 {
   "name": "youtube-search-filters",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "Sort YouTube results and filter them by upload year, duration, view count, Shorts, watched videos, keywords and channels.",
   "private": true,
   "scripts": {
@@ -8,7 +8,8 @@
     "test:dom": "node tools/test.js",
     "test:data": "node tools/test-data.js",
     "test": "node tools/test.js && node tools/test-data.js",
-    "check": "npm run validate && npm test"
+    "check": "npm run validate && npm test",
+    "package": "node tools/package.js"
   },
   "devDependencies": {
     "jsdom": "^24.0.0"

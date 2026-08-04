@@ -15,6 +15,6 @@ venv/
 node_modules/
 # package-lock.json is committed so CI can use `npm ci` (reproducible installs)
 
-# Build output
+# Build output (npm run package)
 *.zip
 dist/

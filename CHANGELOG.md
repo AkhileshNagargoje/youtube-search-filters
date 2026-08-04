@@ -2,6 +2,25 @@
 
 All notable changes to this project are documented here.
 
+## [1.12.0] - 2026-08-05
+
+### Added
+- **Firefox support and store packaging.** `npm run package` builds a zip per
+  browser into `dist/`. Chrome and Edge take the manifest unchanged; the Firefox
+  build adds the add-on id and `strict_min_version: 128.0`, since `world: "MAIN"`
+  content scripts — which the render-time filtering depends on — need Firefox 128+.
+- Each zip contains only runtime files, so tests, docs and lockfiles can't reach
+  a store upload. The zip writer uses Node's `zlib` alone, adding no build
+  dependencies.
+- CI now builds the packages on every run and attaches them as artifacts, so a
+  build can be installed without cloning.
+
+### Testing
+- `npm run validate` asserts that every file the manifest references also
+  appears in the packaging list — an explicit list is safe from leaks but prone
+  to omissions, and shipping without e.g. `injected.js` would break the
+  extension silently.
+
 ## [1.11.0] - 2026-08-05
 
 ### Added

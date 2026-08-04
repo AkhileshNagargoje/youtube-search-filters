@@ -1,6 +1,6 @@
 # 🔍 Search Filters for YouTube
 
-> A lightweight Chrome/Edge extension that gives YouTube search the filters it's missing — **sort** results properly, restrict them to an **upload-year range**, and hide **Shorts, watched videos, off-length clips, low-view uploads, and blocked keywords/channels**.
+> A lightweight Chrome/Edge/Firefox extension that gives YouTube search the filters it's missing — **sort** results properly, restrict them to an **upload-year range**, and hide **Shorts, watched videos, off-length clips, low-view uploads, and blocked keywords/channels**.
 
 [![CI](https://github.com/AkhileshNagargoje/youtube-search-filters/actions/workflows/ci.yml/badge.svg)](https://github.com/AkhileshNagargoje/youtube-search-filters/actions/workflows/ci.yml)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue)
@@ -75,13 +75,35 @@ If YouTube ever changes that data shape, the extension falls back to its
 original approach — reading the rendered cards and hiding the ones that don't
 match. Nothing leaves your browser either way.
 
-## 📦 Install (unpacked)
+## 📦 Install
+
+### Chrome / Edge (unpacked)
 
 1. Download or clone this repo.
 2. Open `chrome://extensions` (or `edge://extensions`).
 3. Enable **Developer mode** (top-right).
 4. Click **Load unpacked** and select this folder.
 5. Open YouTube — a **Filters** button appears next to the search bar.
+
+### Firefox
+
+Firefox **128+** is required (the render-time filtering uses a `world: "MAIN"`
+content script, which older versions don't support).
+
+1. Run `npm run package` to build `dist/…-firefox.zip`.
+2. Open `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on** and
+   pick the zip. (Temporary add-ons are removed when Firefox restarts; a signed
+   build is needed to install permanently.)
+
+### Building store packages
+
+```bash
+npm run package            # chrome, edge and firefox zips into dist/
+npm run package -- firefox # just one
+```
+
+Each zip contains only the runtime files — no tests, docs or lockfiles. The
+Firefox build additionally carries the add-on id and `strict_min_version`.
 
 ## 🚀 Usage
 
@@ -122,9 +144,10 @@ Both run on every push and pull request via [GitHub Actions](.github/workflows/c
 ├── icons/             # 16/32/48/128 px PNG icons
 ├── docs/preview.svg   # README preview image
 ├── package.json       # npm test script + jsdom devDependency
-├── .github/workflows/ # CI: validate + test on every push/PR
+├── .github/workflows/ # CI: validate, test, build packages
 └── tools/
     ├── make_icons.py  # Regenerate icons (requires Pillow)
+    ├── package.js     # Build per-browser store zips
     ├── validate.js    # Static package checks
     ├── test.js        # DOM filtering + UI (64 assertions)
     └── test-data.js   # Render-time filtering (28 assertions)

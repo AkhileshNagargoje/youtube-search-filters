@@ -127,6 +127,21 @@ check(
   })
 );
 
+// --- the packaged file list covers everything the manifest needs -----------
+// tools/package.js lists runtime files explicitly so dev files can't leak into
+// a store upload. The risk of an explicit list is forgetting to update it, which
+// would ship a broken extension — so assert it covers every manifest reference.
+const packageSrc = read("tools/package.js");
+const listed = new Set(
+  (packageSrc.match(/^\s*"([^"]+\.[a-z]+)",$/gm) || []).map((l) => l.trim().replace(/^"|",$/g, ""))
+);
+const notPackaged = [...new Set(referenced)].concat(localeFile).filter((f) => !listed.has(f));
+check(
+  "every manifest-referenced file is in the package list",
+  notPackaged.length === 0,
+  notPackaged.join(", ")
+);
+
 // --- permissions stay minimal ---------------------------------------------
 // Broad host permissions are the top cause of store-review friction; fail loudly
 // if one ever creeps in.

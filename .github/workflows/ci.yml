@@ -28,3 +28,14 @@ jobs:
       # Behavioural checks against a mock YouTube DOM.
       - name: Run tests
         run: npm test
+
+      # Proves the store builds still assemble, and attaches them to the run so
+      # they can be installed without cloning.
+      - name: Build store packages
+        run: npm run package
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extension-packages
+          path: dist/*.zip
+          if-no-files-found: error
