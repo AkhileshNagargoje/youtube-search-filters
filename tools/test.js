@@ -42,6 +42,18 @@ const html = `<!doctype html><html><body>
     <div id="metadata-line"><span class="inline-metadata-item">50K views</span></div>
   </ytd-video-renderer>
 
+  <!-- Reproduces the real bug: YouTube returned a 6-day-old video for a
+       "before:2020-01-01" query. -->
+  <ytd-video-renderer id="vidRecent">
+    <a id="video-title">Elon Musk Rolls Out X Money</a>
+    <div id="metadata-line"><span class="inline-metadata-item">241k views</span><span class="inline-metadata-item">6 days ago</span></div>
+  </ytd-video-renderer>
+
+  <ytd-video-renderer id="vidOld">
+    <a id="video-title">Elon Musk: Work twice as hard</a>
+    <div id="metadata-line"><span class="inline-metadata-item">3.4m views</span><span class="inline-metadata-item">12 years ago</span></div>
+  </ytd-video-renderer>
+
   <ytd-video-renderer id="vidBadChannel">
     <a id="video-title">Some ordinary video</a>
     <ytd-channel-name><a>ClickbaitCentral</a></ytd-channel-name>
@@ -181,6 +193,34 @@ const Y = window.YTYF;
 ].forEach(([txt, lang, want]) =>
   check("parseViews " + (lang || "en") + " " + JSON.stringify(txt), Y.parseViews(txt, lang) === want)
 );
+
+// ---- relative upload-date parsing ----------------------------------------
+const NOW = new Date(2026, 7, 5).getTime(); // 5 Aug 2026
+const range = (txt) => Y.parseUploadYearRange(txt, NOW);
+check("6 days ago -> 2026", range("6 days ago").minYear === 2026 && range("6 days ago").maxYear === 2026);
+check("12 years ago -> 2013..2014", range("12 years ago").minYear === 2013 && range("12 years ago").maxYear === 2014);
+check("8 years ago -> 2017..2018", range("8 years ago").minYear === 2017 && range("8 years ago").maxYear === 2018);
+check("3 months ago -> 2026", range("3 months ago").maxYear === 2026);
+check("vor 3 Jahren (de)", range("vor 3 Jahren").minYear === 2022);
+check("hace 2 meses (es)", range("hace 2 meses").maxYear === 2026);
+check("view counts are not dates", range("3.4m views") === null);
+check("channel-ish text is not a date", range("Vator") === null);
+
+// Only hides what is CERTAINLY outside the range
+const upTo2019 = { from: "", to: "2019" };
+check("would hide a 6-day-old video when up to 2019", Y.outsideYearRange(range("6 days ago"), upTo2019));
+check("would keep a 12-year-old video when up to 2019", !Y.outsideYearRange(range("12 years ago"), upTo2019));
+check("keeps ambiguous cards (no date parsed)", !Y.outsideYearRange(null, upTo2019));
+
+// ---- end-to-end: the exact failure from the screenshot -------------------
+const toSel = $("ytyf-to");
+toSel.value = "2019";
+fire(toSel, "change", "Event");
+check("E2E: recent video hidden despite YouTube returning it", hidden("vidRecent"));
+check("E2E: 12-year-old video still shown", !hidden("vidOld"));
+toSel.value = "";
+fire(toSel, "change", "Event");
+check("E2E: clearing the year restores the recent video", !hidden("vidRecent"));
 
 // ---- debounced writes (storage.sync allows only 120/min) -----------------
 syncWrites = 0;

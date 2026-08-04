@@ -218,6 +218,54 @@
     return s.split(":").reduce((acc, p) => acc * 60 + parseInt(p, 10), 0);
   }
 
+  // ---- relative upload dates ("12 years ago") ------------------------------
+
+  // YouTube does NOT reliably enforce the before:/after: search operators — it
+  // happily returns a 6-day-old video for `before:2020-01-01`. So we also read
+  // each card's relative upload date and enforce the range ourselves.
+  const DATE_UNITS = [
+    { re: /(year|jahr|année|\bans?\b|año|anos|ann[oi]|jaar|\bår\b|vuot|vuosi|\blat\b|\brok|год|лет|года|年|년|साल|वर्ष|سنة|yıl|năm|ปี)/i, ms: 365.25 * 864e5 },
+    { re: /(month|monat|mois|\bmes|mes[ie]|maand|månad|kuukau|miesi|месяц|мес\b|ヶ月|カ月|个月|個月|개월|महीन|माह|شهر|\bay\b|tháng|เดือน)/i, ms: 30.44 * 864e5 },
+    { re: /(week|woche|semaine|semana|settiman|vecka|\buke\b|tydz|недел|週間|주\b|सप्ताह|हफ़्त|हफ्त|أسبوع|hafta|tuần|สัปดาห์)/i, ms: 7 * 864e5 },
+    { re: /(day|\btag|jour|d[íi]a|giorno|\bdag|päiv|dzień|dni|день|дня|дней|日|일\b|दिन|يوم|gün|ngày|วัน)/i, ms: 864e5 },
+    { re: /(hour|stunde|heure|hora|\bora|uur|timm|godz|час|時間|시간|घंट|ساعة|saat|giờ|ชั่วโมง|minut|minuto|минут|分|분|मिनट|دقيقة|dakika|phút|นาที|second|sekun|секунд|秒)/i, ms: 0 },
+  ];
+
+  function looksLikeRelativeDate(text) {
+    if (!text || !/\d/.test(text)) return false;
+    return DATE_UNITS.some((u) => u.re.test(text));
+  }
+
+  // Returns the range of years the video could have been uploaded in, e.g.
+  // "12 years ago" (Aug 2026) → { minYear: 2013, maxYear: 2014 }. Returns null
+  // when the text isn't a relative date. The range is deliberately widened by
+  // one unit so callers can hide only what is *certainly* outside the filter.
+  function parseUploadYearRange(text, nowMs) {
+    if (!looksLikeRelativeDate(text)) return null;
+    const now = nowMs == null ? Date.now() : nowMs;
+    const m = String(text).match(/(\d+)/);
+    if (!m) return null;
+    const n = parseInt(m[1], 10);
+    const unit = DATE_UNITS.find((u) => u.re.test(text));
+    if (!unit) return null;
+    const latest = now - n * unit.ms;
+    const earliest = now - (n + 1) * unit.ms;
+    return {
+      minYear: new Date(earliest).getFullYear(),
+      maxYear: new Date(latest).getFullYear(),
+    };
+  }
+
+  // True when the card's upload date is certainly outside the year filter.
+  function outsideYearRange(range, s) {
+    if (!range || !hasYearFilter(s)) return false;
+    const to = parseInt(s.to, 10);
+    const from = parseInt(s.from, 10);
+    if (!isNaN(to) && range.minYear > to) return true; // definitely too new
+    if (!isNaN(from) && range.maxYear < from) return true; // definitely too old
+    return false;
+  }
+
   // Comma/newline separated list → array of lowercased tokens.
   function parseList(str) {
     return (str || "")
@@ -274,6 +322,9 @@
     parseViews,
     parseDuration,
     parseList,
+    looksLikeRelativeDate,
+    parseUploadYearRange,
+    outsideYearRange,
     hasYearFilter,
     hasDomFilter,
     isActive,

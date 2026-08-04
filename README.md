@@ -40,6 +40,12 @@ YouTube's built-in filters are coarse and there's no way to say *"only videos up
 
 These are **real YouTube search results** — no scraping, no third-party API.
 
+⚠️ **YouTube does not reliably enforce these operators** — it will happily return a
+6-day-old video for `before:2020-01-01`. So the extension also reads each result's
+own upload date ("12 years ago") and hides anything certainly outside your range.
+The operator narrows the search; the on-page check enforces it. Cards whose date
+can't be read are always kept, so nothing is hidden by mistake.
+
 **Hide Shorts / watched / duration / min-views / blocklists** work client-side: the extension reads each result's duration badge, view count, title, channel, and watched-progress and hides the ones that don't match, live as the page loads (no reload). Nothing leaves your browser.
 
 ## 📦 Install (unpacked)

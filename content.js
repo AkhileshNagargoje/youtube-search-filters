@@ -183,11 +183,32 @@
     );
   }
 
+  // The relative upload date ("12 years ago"). Scanned from the metadata line
+  // only — never the channel name, which can also contain digits and units
+  // (e.g. a channel called "5 Minute Crafts").
+  function getUploadYearRange(el) {
+    const items = el.querySelectorAll("#metadata-line span, .inline-metadata-item");
+    let found = null;
+    for (const it of items) {
+      const txt = it.textContent;
+      if (VIEW_WORDS.test(txt)) continue; // that's the view count
+      const r = YTYF.parseUploadYearRange(txt);
+      if (r) found = r; // the date is the last such item
+    }
+    return found;
+  }
+
   // true = keep visible, false = hide. Never throws — on error, keep the video.
   function matches(el, s) {
     try {
       if (s.hideShorts && isShort(el)) return false;
       if (s.hideWatched && isWatched(el)) return false;
+
+      // YouTube does not reliably honour before:/after:, so enforce the year
+      // range ourselves against the card's own upload date.
+      if (YTYF.hasYearFilter(s) && YTYF.outsideYearRange(getUploadYearRange(el), s)) {
+        return false;
+      }
 
       const min = parseInt(s.minDuration, 10);
       const max = parseInt(s.maxDuration, 10);
@@ -251,7 +272,8 @@
       document.querySelectorAll("[data-ytf-hidden]").forEach(show);
     }
 
-    if (YTYF.hasDomFilter(settings)) {
+    // isActive, not hasDomFilter: a year range is now enforced on-page too.
+    if (YTYF.isActive(settings)) {
       const stamp = String(epoch);
       if (settings.hideShorts) hideShortsUI();
       document.querySelectorAll(RENDERER_SEL).forEach((el) => {
@@ -285,7 +307,7 @@
     const badge = document.getElementById(COUNT_ID);
     if (badge) {
       const n = document.querySelectorAll("[data-ytf-hidden]").length;
-      if (YTYF.hasDomFilter(settings) && n > 0) {
+      if (YTYF.isActive(settings) && n > 0) {
         badge.textContent = String(n);
         badge.style.display = "";
       } else {

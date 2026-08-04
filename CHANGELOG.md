@@ -2,6 +2,26 @@
 
 All notable changes to this project are documented here.
 
+## [1.8.0] - 2026-08-05
+
+### Fixed
+- **The year filter didn't actually filter.** YouTube does not reliably enforce
+  the `before:`/`after:` search operators — a query for `before:2020-01-01`
+  returned a video uploaded 6 days ago. The extension now enforces the range
+  itself: it reads each card's relative upload date ("12 years ago") and hides
+  results that fall certainly outside the selected years. The search operator is
+  still sent, so YouTube narrows the results first.
+
+  Date parsing covers years/months/weeks/days/hours across the major locales and
+  deliberately widens each estimate by one unit, so a card is hidden only when
+  its entire possible date range is outside the filter. Cards whose date can't
+  be parsed are always kept — the filter never hides on a guess.
+
+### Testing
+- 52 assertions (was 38), including an end-to-end reproduction of the reported
+  failure: a 6-day-old result is hidden under "up to 2019" while a 12-year-old
+  result is kept.
+
 ## [1.7.0] - 2026-08-05
 
 ### Fixed
