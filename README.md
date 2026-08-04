@@ -24,7 +24,8 @@ YouTube's built-in filters are coarse and there's no way to say *"only videos up
 - ⏱️ **Duration filter** — hide anything shorter than a min and/or longer than a max (in minutes).
 - 📊 **Minimum views** — hide videos below a view-count threshold.
 - 🚫 **Keyword & channel blocklists** — hide results whose title contains a word, or from named channels.
-- 🔢 **"N hidden" badge** — see how many results were filtered out on the page.
+- ⚡ **Filtered before it renders** — blocked videos are removed from YouTube's data, so they never flash on screen.
+- 🔢 **"N hidden" badge** — see how many results were filtered out.
 - 🌍 **Translatable** — all UI strings live in `_locales/` (i18n-ready); English included.
 - 🎛️ **Two ways in** — an on-page **Filters** button by the search bar and a matching toolbar popup, kept in sync; 🌗 light/dark aware; ♿ keyboard + ARIA.
 - 🔒 **Private** — no tracking, no network calls. Settings live in `chrome.storage` only.
@@ -59,7 +60,20 @@ own upload date ("12 years ago") and hides anything certainly outside your range
 The operator narrows the search; the on-page check enforces it. Cards whose date
 can't be read are always kept, so nothing is hidden by mistake.
 
-**Hide Shorts / watched / duration / min-views / blocklists** work client-side: the extension reads each result's duration badge, view count, title, channel, and watched-progress and hides the ones that don't match, live as the page loads (no reload). Nothing leaves your browser.
+**Everything else is filtered before it renders.** A script running in YouTube's
+own JS context intercepts the data YouTube is about to display — the
+`ytInitialData` payload embedded in the first page load, and the
+`/youtubei/v1/*` responses behind infinite scroll — and removes the entries you
+don't want. The cards are never created, so blocked videos don't flash on screen
+and the browser doesn't waste work rendering them.
+
+Reading the data instead of the page also means **exact values**: real view
+counts (`1,234,567` rather than the rounded `1.2M` shown on screen) and stable
+**channel IDs**, so blocking a channel keeps working after it's renamed.
+
+If YouTube ever changes that data shape, the extension falls back to its
+original approach — reading the rendered cards and hiding the ones that don't
+match. Nothing leaves your browser either way.
 
 ## 📦 Install (unpacked)
 
@@ -89,7 +103,9 @@ npm run check     # validate + test
   placeholder the manifest references exists, every `t()` key is translatable,
   the manifest and package versions agree, and host permissions stay
   YouTube-only.
-- `npm test` — behavioural checks (64 assertions) against a mock YouTube DOM.
+- `npm test` — 92 behavioural assertions: `test.js` drives the UI and DOM
+  filtering against a mock YouTube page, `test-data.js` checks the render-time
+  filtering against realistic `/youtubei/v1/search` response shapes.
 
 Both run on every push and pull request via [GitHub Actions](.github/workflows/ci.yml).
 
@@ -98,7 +114,8 @@ Both run on every push and pull request via [GitHub Actions](.github/workflows/c
 ```
 ├── manifest.json      # Extension config (Manifest V3)
 ├── common.js          # Shared logic: storage, query building, parsers
-├── content.js         # On-page button/panel, search + DOM filtering
+├── injected.js        # MAIN-world: filters YouTube's data before it renders
+├── content.js         # On-page button/panel, search + DOM fallback filtering
 ├── styles.css         # Button/panel styling (light/dark)
 ├── popup.html/js      # Toolbar popup (mirrors the on-page panel)
 ├── _locales/en/       # Translatable UI strings (i18n)
@@ -109,7 +126,8 @@ Both run on every push and pull request via [GitHub Actions](.github/workflows/c
 └── tools/
     ├── make_icons.py  # Regenerate icons (requires Pillow)
     ├── validate.js    # Static package checks
-    └── test.js        # jsdom integration test (64 assertions)
+    ├── test.js        # DOM filtering + UI (64 assertions)
+    └── test-data.js   # Render-time filtering (28 assertions)
 ```
 
 ## 🔧 Development

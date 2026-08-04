@@ -2,6 +2,41 @@
 
 All notable changes to this project are documented here.
 
+## [1.11.0] - 2026-08-05
+
+### Added
+- **Render-time filtering.** Blocked videos are now removed from YouTube's data
+  *before* it becomes DOM, instead of being hidden after the browser has painted
+  them. A `world: "MAIN"` content script runs at `document_start` and intercepts
+  both sources of results: the `ytInitialData` payload embedded in the first
+  page load (via a property setter on the global) and `/youtubei/v1/*` responses
+  behind infinite scroll (via a `fetch` wrapper that filters a cloned body).
+  Blocked cards are never created, so they no longer flash on screen and the
+  browser doesn't render work it will discard.
+- **Block channels by ID.** The response data carries `browseId`, so a blocklist
+  entry like `UCabc123` keeps working after a channel is renamed. Names still
+  match as before.
+- View thresholds now use YouTube's exact `viewCountText` (`1,234,567`) rather
+  than the rounded on-screen text (`1.2M`), so the cut-off is precise.
+
+### Changed
+- DOM filtering is retained as a **fallback**: if YouTube changes its data
+  shape, the data pass quietly matches nothing and the original on-page pass
+  still catches the results.
+- The "N hidden" badge also counts videos removed before render.
+- Settings are mirrored into `localStorage` so the MAIN-world script can read
+  them synchronously — `chrome.storage` is async and would arrive after the
+  first paint.
+
+### Testing
+- New suite `tools/test-data.js` (28 assertions) covering field extraction, each
+  filter decision, response pruning across flat and `richItemRenderer` layouts,
+  the `ytInitialData` hook, and resilience to malformed or deeply nested data.
+  Total is now 92 assertions.
+- `npm run validate` gained checks that a MAIN-world script exists, runs at
+  `document_start` (any later and YouTube has already parsed its data), and
+  loads `common.js` before `injected.js`.
+
 ## [1.10.1] - 2026-08-05
 
 ### Changed

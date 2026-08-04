@@ -106,6 +106,27 @@ check(
 check("manifest version is MV3-shaped", /^\d+(\.\d+){0,3}$/.test(manifest.version), manifest.version);
 check("manifest_version is 3", manifest.manifest_version === 3);
 
+// --- render-time filtering invariants --------------------------------------
+// The MAIN-world script only beats the first paint if it runs at
+// document_start; at any later point YouTube has already parsed ytInitialData.
+const mainWorld = (manifest.content_scripts || []).filter((cs) => cs.world === "MAIN");
+check("a MAIN-world content script is declared", mainWorld.length > 0);
+check(
+  "MAIN-world scripts run at document_start",
+  mainWorld.every((cs) => cs.run_at === "document_start"),
+  mainWorld.map((cs) => cs.run_at).join(", ")
+);
+// injected.js depends on window.YTYF, so common.js must be listed before it.
+check(
+  "common.js is loaded before injected.js in the MAIN world",
+  mainWorld.every((cs) => {
+    const js = cs.js || [];
+    const c = js.indexOf("common.js");
+    const i = js.indexOf("injected.js");
+    return i === -1 || (c !== -1 && c < i);
+  })
+);
+
 // --- permissions stay minimal ---------------------------------------------
 // Broad host permissions are the top cause of store-review friction; fail loudly
 // if one ever creeps in.

@@ -63,6 +63,8 @@
   let settings = YTYF.defaults();
   // Bumped whenever settings change, so already-evaluated cards are re-checked.
   let epoch = 0;
+  // Videos injected.js removed before they ever rendered, for the badge.
+  let removedAtSource = 0;
 
   function pageLang() {
     return (
@@ -317,7 +319,8 @@
     if (btn) btn.classList.toggle("ytyf-on", YTYF.isActive(settings));
     const badge = document.getElementById(COUNT_ID);
     if (badge) {
-      const n = document.querySelectorAll("[data-ytf-hidden]").length;
+      const n =
+        document.querySelectorAll("[data-ytf-hidden]").length + removedAtSource;
       if (YTYF.isActive(settings) && n > 0) {
         badge.textContent = String(n);
         badge.style.display = "";
@@ -327,10 +330,21 @@
     }
   }
 
+  // The MAIN-world script (injected.js) filters YouTube's data before it
+  // renders, but has no chrome.storage access — and storage is async, which
+  // would arrive after the first paint. Mirror settings into localStorage so it
+  // can read them synchronously at document_start.
+  function mirrorSettings() {
+    try {
+      localStorage.setItem("ytyfSettings", JSON.stringify(settings));
+    } catch (e) {}
+  }
+
   function setField(key, value) {
     settings[key] = value;
     settings = YTYF.normalize(settings);
     YTYF.save(settings);
+    mirrorSettings();
     applyDomFilters();
   }
 
@@ -657,6 +671,7 @@
   function init() {
     YTYF.load((s) => {
       settings = s;
+      mirrorSettings();
       injectUI();
       observeRoot();
       syncPanel();
@@ -687,8 +702,18 @@
 
   YTYF.onChanged((s) => {
     settings = s;
+    mirrorSettings();
     syncPanel();
     applyDomFilters();
+  });
+
+  // Count videos removed before render so the badge reflects them too.
+  window.addEventListener("ytyf-removed", (e) => {
+    removedAtSource += (e.detail && e.detail.count) || 0;
+    updateBadges();
+  });
+  document.addEventListener("yt-navigate-start", () => {
+    removedAtSource = 0;
   });
 
   document.addEventListener("keydown", handleKeydown, true);
